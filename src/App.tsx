@@ -19,11 +19,13 @@ import { useBlazeEditor } from './hooks/useBlazeEditor'
 import { useNotice } from './hooks/useNotice'
 import { useSelectionPill } from './hooks/useSelectionPill'
 import { askCommand, useSuggestion } from './hooks/useSuggestion'
+import { useTryPrompts } from './hooks/useTryPrompts'
 
 function Workspace({ editor }: { editor: Editor }) {
   const { notice, show: showNotice, dismiss: dismissNotice } = useNotice()
   const suggestion = useSuggestion(editor, showNotice)
   const pill = useSelectionPill(editor)
+  const tryPrompts = useTryPrompts(editor)
 
   const runCommand = (command: Command) => {
     suggestion.askAboutSelection(command)
@@ -38,7 +40,7 @@ function Workspace({ editor }: { editor: Editor }) {
   return (
     <div className={styles.app}>
       <Sidebar appName={APP_NAME} documentTitle={DOCUMENT_TITLE} documentSubtitle={DOCUMENT_SUBTITLE} />
-      <EditorPane editor={editor} fileName={DOCUMENT_FILE_NAME} />
+      <EditorPane editor={editor} fileName={DOCUMENT_FILE_NAME} showHint={!suggestion.hasAsked} />
       <CoAuthorCard
         appName={APP_NAME}
         view={suggestion.cardView}
@@ -46,6 +48,8 @@ function Workspace({ editor }: { editor: Editor }) {
         refineCommands={REFINE_COMMANDS}
         refineText={suggestion.refineText}
         onSubmitRefineText={() => suggestion.review.refine(askCommand(suggestion.refineText))}
+        tryPrompts={tryPrompts}
+        onTry={(prompt) => suggestion.askAboutHeading(prompt.heading, prompt.command)}
       />
       {pill.position && (
         <SelectionPill

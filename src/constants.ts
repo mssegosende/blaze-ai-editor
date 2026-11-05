@@ -25,6 +25,31 @@ export const COMMANDS = {
   measurable: { id: 'measurable', label: 'Make it measurable', instruction: 'Make it measurable.' },
 } as const satisfies Record<string, Command>
 
+export interface TryPrompt {
+  id: string
+  label: string
+  /** The section it acts on, found by its heading text. */
+  heading: string
+  command: Command
+}
+
+/** First-open prompts: one click to a useful suggestion, no reading required. */
+export const TRY_PROMPTS: TryPrompt[] = [
+  { id: 'why', label: 'Make “Why now” shorter', heading: 'Why now', command: COMMANDS.shorter },
+  {
+    id: 'metrics',
+    label: 'Make the success metric measurable',
+    heading: 'Success metrics',
+    command: COMMANDS.measurable,
+  },
+  {
+    id: 'safety',
+    label: 'Make the safety section more formal',
+    heading: "How we'll keep it safe",
+    command: COMMANDS.formal,
+  },
+]
+
 /** Direct actions in the selection pill. */
 export const PILL_COMMANDS: Command[] = [COMMANDS.rewrite, COMMANDS.shorter, COMMANDS.grammar]
 export const TONE_COMMANDS: Command[] = [COMMANDS.formal, COMMANDS.warmer, COMMANDS.keep]

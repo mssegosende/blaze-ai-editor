@@ -1,9 +1,10 @@
-import type { Command } from '../../constants'
+import type { Command, TryPrompt } from '../../constants'
 import type { CardView, ReviewView } from '../../lib/cardView'
 import type { ChangeDecision } from '../../lib/diff'
 import { changesOf } from '../../lib/diff'
 import { ChangeRow } from '../ChangeRow/ChangeRow'
 import { DiffView } from '../DiffView/DiffView'
+import { EmptyState } from '../EmptyState/EmptyState'
 import { RefineControls } from '../RefineControls/RefineControls'
 import styles from './CoAuthorCard.module.css'
 
@@ -27,6 +28,8 @@ interface CoAuthorCardProps {
   refineCommands: Command[]
   refineText: string
   onSubmitRefineText: () => void
+  tryPrompts: TryPrompt[]
+  onTry: (prompt: TryPrompt) => void
 }
 
 function pad(count: number): string {
@@ -61,7 +64,7 @@ function Review({
   refineCommands,
   refineText,
   onSubmitRefineText,
-}: Omit<CoAuthorCardProps, 'view'> & { view: ReviewView }) {
+}: Omit<CoAuthorCardProps, 'view' | 'tryPrompts' | 'onTry'> & { view: ReviewView }) {
   const changes = changesOf(view.diff)
   const total = changes.length
   const decided = changes.filter((change) => view.decisions.has(change.id)).length
@@ -149,18 +152,20 @@ function Review({
   )
 }
 
-export function CoAuthorCard({ appName, view, actions, refineCommands, refineText, onSubmitRefineText }: CoAuthorCardProps) {
+export function CoAuthorCard({
+  appName,
+  view,
+  actions,
+  refineCommands,
+  refineText,
+  onSubmitRefineText,
+  tryPrompts,
+  onTry,
+}: CoAuthorCardProps) {
   return (
     <aside className={styles.panel} aria-label="Co-author">
       <div className={styles.card} aria-live="polite">
-        {view.kind === 'idle' && (
-          <>
-            <h2 className={styles.label}>03 · Co-author</h2>
-            <p className={styles.counter}>00</p>
-            <p className={styles.title}>Nothing to review yet</p>
-            <p className={styles.body}>Select text in the document and pick an action.</p>
-          </>
-        )}
+        {view.kind === 'idle' && <EmptyState prompts={tryPrompts} onTry={onTry} />}
 
         {view.kind === 'loading' && (
           <>

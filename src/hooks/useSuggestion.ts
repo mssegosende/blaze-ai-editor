@@ -7,7 +7,7 @@ import { APPLY_META, applyMarkdown, mapPlace } from '../lib/applySuggestion'
 import { deriveCardView } from '../lib/cardView'
 import { applyDecisions, keepAll } from '../lib/diff'
 import type { ChangeDecision } from '../lib/diff'
-import { normalizeMarkdown, placeFromSelection } from '../lib/editorDocument'
+import { normalizeMarkdown, placeFromHeading, placeFromSelection } from '../lib/editorDocument'
 import type { SuggestionPlace } from '../lib/editorDocument'
 import { currentIteration, makeIteration, sessionReducer } from '../lib/suggestionSession'
 import { setTargetHighlight } from '../lib/targetHighlight'
@@ -38,6 +38,8 @@ export function useSuggestion(editor: Editor, showNotice: (message: string, undo
   const { run, reset } = ai
   const [session, dispatch] = useReducer(sessionReducer, null)
   const [refineText, setRefineText] = useState('')
+  /** The first-open hint has done its job once the user has asked for something. */
+  const [hasAsked, setHasAsked] = useState(false)
 
   const endSession = useCallback(() => {
     reset()
@@ -83,6 +85,7 @@ export function useSuggestion(editor: Editor, showNotice: (message: string, undo
 
   const askAbout = useCallback(
     (target: SuggestionPlace, command: Command) => {
+      setHasAsked(true)
       dispatch({ type: 'begin', place: target, label: command.label })
       setTargetHighlight(editor, target)
       void request(target, command, null)
@@ -93,6 +96,14 @@ export function useSuggestion(editor: Editor, showNotice: (message: string, undo
   const askAboutSelection = useCallback(
     (command: Command) => {
       const target = placeFromSelection(editor)
+      if (target) askAbout(target, command)
+    },
+    [askAbout, editor],
+  )
+
+  const askAboutHeading = useCallback(
+    (heading: string, command: Command) => {
+      const target = placeFromHeading(editor, heading)
       if (target) askAbout(target, command)
     },
     [askAbout, editor],
@@ -163,6 +174,8 @@ export function useSuggestion(editor: Editor, showNotice: (message: string, undo
   return {
     cardView: deriveCardView(session, ai.state),
     askAboutSelection,
+    askAboutHeading,
+    hasAsked,
     refineText,
     review: {
       acceptAll,

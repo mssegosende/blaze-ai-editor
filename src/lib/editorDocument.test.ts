@@ -1,8 +1,10 @@
 // @vitest-environment jsdom
 import { Editor } from '@tiptap/core'
 import { afterEach, describe, expect, it } from 'vitest'
+import { TRY_PROMPTS } from '../constants'
 import { SAMPLE_DOCUMENT } from '../sampleDocument'
 import {
+  availablePrompts,
   EDITOR_EXTENSIONS,
   normalizeMarkdown,
   placeFromHeading,
@@ -216,6 +218,29 @@ describe('placeFromHeading', () => {
 
   it('finds nothing when the heading is gone', () => {
     expect(placeFromHeading(editorWith(RICH), 'Success metrics')).toBeNull()
+  })
+})
+
+describe('availablePrompts', () => {
+  const prompts = [{ heading: 'Why now' }, { heading: 'Success metrics' }]
+
+  it('every prompt is offered on the sample document', () => {
+    const offered = availablePrompts(editorWith(SAMPLE_DOCUMENT), TRY_PROMPTS)
+    expect(offered).toEqual(TRY_PROMPTS)
+  })
+
+  it('Try one is hidden when its section is gone', () => {
+    const editor = editorWith('## Why now\n\nSome text.')
+    expect(availablePrompts(editor, prompts)).toEqual([{ heading: 'Why now' }])
+  })
+
+  it('Try one is hidden when its section has no text left', () => {
+    const editor = editorWith('## Why now\n\n## Success metrics\n\nSome text.')
+    expect(availablePrompts(editor, prompts)).toEqual([{ heading: 'Success metrics' }])
+  })
+
+  it('a prompt acts on a section, not on a selection', () => {
+    expect(placeFromHeading(editorWith(SAMPLE_DOCUMENT), 'Why now')?.kind).toBe('section')
   })
 })
 

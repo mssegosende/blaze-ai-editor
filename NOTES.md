@@ -86,7 +86,7 @@ Test names are the names the tests will have. Update the status when a row is pr
 | S22 | The section is sent as read-only context | `server/prompt.test.ts`: "the section goes along as context, separate from the passage"; test "a selection request includes its section as context" | done |
 | S23 | JSON is validated without zod | `server/parseModelOutput.ts`, `parseSuggestRequest` in `server/app.ts`; decision 13 | done |
 | S24 | `/` with nothing selected acts on the current section and names it | `src/lib/sections.ts`; tests "the current section is the blocks under the cursor's heading", "a title with no text of its own has no target", "the palette names its target" | planned |
-| S25 | First-open state: empty co-author card, "Try one" prompts and the hint | `src/components/CoAuthorCard/`; test "Try one is hidden when its section is gone"; manual walkthrough of a new user | planned |
+| S25 | First-open state: empty co-author card, "Try one" prompts and the hint | `src/components/EmptyState/`, hint in `src/components/EditorPane/`; test "Try one is hidden when its section is gone"; manual walkthrough of a new user | done |
 | S26 | Loading state with Cancel, using AbortController | `src/api/suggestClient.ts`; test "cancel aborts the request and leaves the document unchanged" | planned |
 | S27 | Clear error: missing key | `server/app.test.ts`: "a missing key is reported without calling the model"; card shows the message | planned |
 | S28 | Clear error: budget exhausted | test "an exhausted budget is reported as budget_exhausted" | planned |

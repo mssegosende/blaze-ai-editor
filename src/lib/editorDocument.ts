@@ -224,6 +224,11 @@ export function placeFromSection(editor: Editor, position: number): SuggestionPl
   }
 }
 
+/** The prompts whose section is still there and still has text. */
+export function availablePrompts<Prompt extends { heading: string }>(editor: Editor, prompts: Prompt[]): Prompt[] {
+  return prompts.filter((prompt) => placeFromHeading(editor, prompt.heading) !== null)
+}
+
 /** The section under a heading with this exact text, for "Try one" prompts. */
 export function placeFromHeading(editor: Editor, headingText: string): SuggestionPlace | null {
   const heading = topLevelBlocks(editor.state.doc).find(

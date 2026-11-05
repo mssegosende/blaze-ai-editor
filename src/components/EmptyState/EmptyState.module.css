@@ -1,0 +1,68 @@
+.label {
+  color: var(--color-on-dark-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+}
+
+.counter {
+  margin: var(--space-5) 0 var(--space-2);
+  font-size: var(--text-counter);
+  font-weight: 200;
+  letter-spacing: -0.06em;
+  line-height: 0.9;
+}
+
+.title {
+  font-size: var(--text-card-title);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.body {
+  margin-top: var(--space-3);
+  color: var(--color-on-dark-soft);
+  font-size: var(--text-md);
+  line-height: 1.5;
+}
+
+.try {
+  margin-top: var(--space-6);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-on-dark-hairline);
+}
+
+.prompts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.prompt {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--size-target);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-on-dark-hairline);
+  border-radius: var(--radius-sm);
+  background: var(--color-on-dark-fill);
+  color: var(--color-on-dark);
+  font-size: var(--text-md);
+  text-align: left;
+}
+
+.prompt:hover {
+  background: var(--color-on-dark-hover);
+}
+
+.dot {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+  opacity: 0.65;
+}
