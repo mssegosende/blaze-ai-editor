@@ -19,7 +19,7 @@ Test names are the names the tests will have. Update the status when a row is pr
 | C3 | "rewrite paragraphs" | Rewrite command in `src/constants.ts`; test "accepting every change reproduces the rewrite exactly" | done |
 | C4 | "fix tone" | More formal and Warmer commands in `src/constants.ts`; `server/prompt.test.ts` | done |
 | C5 | "restructure sections" | `server/prompt.test.ts`: "only a section target is allowed to restructure"; tests "accepting a restructured section is one transaction", "a restructured section keeps headings, lists, bold and links"; decision 15 | done |
-| C6 | "follow specific instructions" | Ask field in `src/components/SelectionPill/` and `src/components/CommandPalette/`; `server/prompt.test.ts`: "a free-text instruction on a first request reaches the model unchanged"; a free-text first request was run in a browser against the real model | done |
+| C6 | "follow specific instructions" | Ask field in `src/components/SelectionPill/` and `src/components/CommandPalette/`; `server/prompt.test.ts`: "a free-text instruction on a first request reaches the model unchanged"; `e2e/core.spec.ts`: "free text works on the first request, and only the selection is sent"; `e2e/keyboard.spec.ts`: "free text works in the palette" | done |
 
 **What to Build**
 
@@ -30,7 +30,7 @@ Test names are the names the tests will have. Update the status when a row is pr
 | B2 | "An AI agent can suggest changes to the document (or a selection)" | Decisions 7 and 14; `src/lib/sections.ts`; tests "a selection request sends only the selected Markdown", "the current section is the blocks under the cursor's heading", "a section command sends only that section" | done |
 | B3 | "Suggestions appear as visible diffs — the user can see exactly what the AI wants to change before accepting" | `src/components/DiffView/`; `src/lib/diff.test.ts`; test "a paragraph split shows up as a visible change" | done |
 | B4 | "The user can accept, reject, or refine the AI's suggestions" | tests "accepting every change reproduces the rewrite exactly", "rejecting every change reproduces the original exactly", "partial accept keeps only the chosen changes"; `server/prompt.test.ts`: "a refine request sends the original, the current suggestion and the instruction" | done |
-| B5 | "The experience feels collaborative — like working with a smart co-author, not a chatbot in a sidebar and not something that completes the whole document" | No chat history anywhere in the UI; still needs your own walkthrough; `SYSTEM_PROMPT` in `server/prompt.ts`; test "a section command sends only that section" | manual |
+| B5 | "The experience feels collaborative — like working with a smart co-author, not a chatbot in a sidebar and not something that completes the whole document" | No chat history anywhere in the UI; still needs a walkthrough by a person; `SYSTEM_PROMPT` in `server/prompt.ts`; test "a section command sends only that section" | manual |
 
 **What to Submit**
 
@@ -44,7 +44,7 @@ Test names are the names the tests will have. Update the status when a row is pr
 
 | # | Brief | Proof (file or test) | Status |
 |---|---|---|---|
-| E1 | The experience: "Is it intuitive? Can we open it, write something, and get useful AI suggestions without reading docs?" | S25 (first-open state); `src/lib/editorDocument.test.ts` and `src/lib/applySuggestion.test.ts`: suggestions on text just typed; a browser run from typing to accept | done |
+| E1 | The experience: "Is it intuitive? Can we open it, write something, and get useful AI suggestions without reading docs?" | S25 (first-open state); `src/lib/editorDocument.test.ts` and `src/lib/applySuggestion.test.ts`: suggestions on text just typed; `e2e/core.spec.ts`: "suggestions work on text the user just typed", from typing to accept | done |
 | E2 | AI integration quality: "Does the agent feel like a collaborator or a gimmick? Are diffs clear and useful?" | "Model comparison" and "Context comparison" below; `src/lib/diff.test.ts`; rationale shown in the card | done |
 | E3 | How you used AI to build it: "Did you use AI tools effectively to ship faster? Can you explain the choices made?" | "Decisions" below; session files (D3); `CLAUDE.md` | planned |
 | E4 | Code quality: "Is the code organized, readable, and something a teammate could pick up?" | `CLAUDE.md`; `pnpm lint`; `pnpm build`; `pnpm test` | planned |
@@ -55,7 +55,7 @@ Test names are the names the tests will have. Update the status when a row is pr
 | # | Brief | Proof (file or test) | Status |
 |---|---|---|---|
 | N1 | "Docker, databases, auth systems — don't add infrastructure you don't need" | `package.json`; no such files in the repository | done |
-| N2 | "Visual perfection — but it should be usable and not broken" | Browser runs of the core flow; S17 for accessibility; still needs your own walkthrough | manual |
+| N2 | "Visual perfection — but it should be usable and not broken" | `e2e/`; S17 for accessibility; still needs a walkthrough by a person | manual |
 | N3 | "Using a specific framework — React, Vue, Svelte, vanilla JS, whatever you're fast with" | React, per the project spec; no framework-specific claim to prove | done |
 
 ### From the project spec
@@ -87,13 +87,13 @@ Test names are the names the tests will have. Update the status when a row is pr
 | S23 | JSON is validated without zod | `server/parseModelOutput.ts`, `parseSuggestRequest` in `server/app.ts`; decision 13 | done |
 | S24 | `/` with nothing selected acts on the current section and names it | `src/lib/sections.ts`; `src/lib/editorDocument.test.ts`: "the current section is the blocks under the cursor's heading", "a title with no text of its own has no target", "the palette names its target: the section holding the cursor" | done |
 | S25 | First-open state: empty co-author card, "Try one" prompts and the hint | `src/components/EmptyState/`, hint in `src/components/EditorPane/`; test "Try one is hidden when its section is gone"; manual walkthrough of a new user | done |
-| S26 | Loading state with Cancel, using AbortController | `src/api/suggestClient.test.ts`: "cancel aborts the request"; the document staying unchanged was checked in a browser run | done |
+| S26 | Loading state with Cancel, using AbortController | `src/api/suggestClient.test.ts`: "cancel aborts the request"; `e2e/errors.spec.ts`: "Cancel aborts the request and leaves the document unchanged" | done |
 | S27 | Clear error: missing key | `server/app.test.ts`: "a missing key is reported without calling the model"; `src/lib/cardView.test.ts`: "each failure has its own heading" | done |
 | S28 | Clear error: budget exhausted | `server/app.test.ts`: "an exhausted budget is reported as budget_exhausted" | done |
 | S29 | Clear error: network | tests "a network failure becomes a readable error", "the client reports an unreachable server" | done |
-| S30 | Retry button after an error | `src/lib/cardView.test.ts`: "retry sends the same request as one new call"; the single new call was counted in a browser run | done |
+| S30 | Retry button after an error | `src/lib/cardView.test.ts`: "retry sends the same request as one new call"; `e2e/errors.spec.ts`: "a failure makes no second call until Retry, which makes exactly one" | done |
 | S31 | Keyboard shortcuts | `src/hooks/useShortcuts.ts`; test "typing a slash in a sentence stays text" | done |
-| S32 | `/` palette | `src/components/CommandPalette/`; `src/lib/keyboard.test.ts`: "the palette moves with the arrows and wraps around"; running on Enter was checked in a browser run | done |
+| S32 | `/` palette | `src/components/CommandPalette/`; `src/lib/keyboard.test.ts`: "the palette moves with the arrows and wraps around"; `e2e/keyboard.spec.ts`: "with a selection it runs on the selection, using the arrows and Enter" | done |
 | S33 | Per-change row: "Change 2 of 6 ‹ › Keep Discard", plus Accept all and Reject all | `src/components/DiffView/`; test "the arrows reach every change, in both directions" | done |
 | S34 | Clicking a change selects it | test "clicking a change selects it" | done |
 | S35 | Contrast fixes from the mockup audit, with deleted text at least AA on the card | `src/styles/tokens.css`; "Accessibility and code audit" below | done |
@@ -103,6 +103,11 @@ Test names are the names the tests will have. Update the status when a row is pr
 | S39 | Suggestions work on text the user just typed, not only the sample document | test "suggestions work on text the user just typed" | done |
 | S40 | Described as a deliberately single-step agent, and never denied to be one, in the README, `NOTES.md` and UI | Decision 7; `CLAUDE.md`; manual search before delivery | planned |
 | S41 | Any restructured section is a single before/after block, all or nothing | `src/lib/diff.test.ts`: "a restructured section is a single before/after block", "a reorder under 60% changed is still a block", "a restructured section is all or nothing, so moved text can never appear twice", "rewording a section in place stays word by word"; `src/lib/applySuggestion.test.ts`: "accepting a restructured block from its diff is one undo and leaves nothing twice" | done |
+| S42 | Browser checks live in the repo and run with `pnpm test:e2e` | `e2e/`, `playwright.config.ts`, `package.json` | done |
+| S43 | The browser tests never call the real API | `playwright.config.ts` starts Vite only; the fixture in `e2e/support.ts`; `e2e/safety.spec.ts`: "nothing is allowed to leave the machine", "a suggestion is answered by the stub, with no API host contacted" | done |
+| S44 | After Apply, focus returns to the document and Ctrl+Z works | `e2e/regressions.spec.ts`: "after Apply, focus returns to the document and one Ctrl+Z restores it" | done |
+| S45 | The pill comes back after Cancel on the same words | `e2e/regressions.spec.ts`: "the pill comes back after Cancel, on the very same words" | done |
+| S46 | Esc closes the palette when it has no target | `e2e/regressions.spec.ts`: "Esc closes the palette when it has no target" | done |
 
 ## Decisions
 
@@ -305,7 +310,13 @@ Run on 2026-11-05, against the code at commit 09.
 
 **Code checks, by search.** No raw colors outside `tokens.css`. No `fetch` outside `src/api/`. No `useState`, `useReducer`, `useEffect` or `useRef` in `src/components/`. No `VITE_` variables. The built `dist/` contains neither the key's variable name nor an OpenRouter key prefix.
 
-**Browser checks.** Each flow was also driven in a real browser (Edge, through Playwright) against `pnpm dev` and the real model. Those scripts lived outside the repo and are not repeatable from it, so where a row cites a browser run, that is evidence from this session, not a test you can rerun. Playwright is not a project dependency.
+**Browser tests.** `pnpm test:e2e` runs the flows in Chromium through Playwright, and every control's height is measured in `e2e/safety.spec.ts`. The first run on a machine needs `pnpm exec playwright install chromium`.
+
+They never call the real API, for three separate reasons. They start Vite only, so the API server that holds the key isn't running. A fixture that applies to every test answers `/api/*` from a stub, and a call with no reply queued fails the test. Every other request to another host is blocked in the browser. The cost is that these tests prove the UI and the contract, not what a real model replies: that is what the comparisons are for.
+
+**The regression tests can fail.** Each of the three bugs in `e2e/regressions.spec.ts` was checked by undoing its fix and running the test: all three were caught.
+
+**Scripted input can outrun the editor.** ProseMirror learns the cursor position from the `selectionchange` event, and a script's next key can arrive first and act on the old position. A person can't type that fast, so this isn't a user-facing bug, but it is why `placeCursor` in `e2e/support.ts` pauses.
 
 ## Delivery checklist
 

@@ -9,6 +9,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "test": "vitest run",
+    "test:e2e": "playwright test",
     "preview": "vite preview",
     "compare-models": "tsx --env-file-if-exists=.env scripts/compareModels.ts",
     "score-models": "tsx scripts/scoreComparison.ts",
@@ -28,6 +29,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.64.1",
     "@types/node": "^24.19.2",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
