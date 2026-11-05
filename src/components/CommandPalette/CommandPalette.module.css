@@ -1,0 +1,119 @@
+.palette {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-7);
+  background:
+    var(--noise),
+    linear-gradient(160deg, var(--color-palette-backdrop-start) 40%, var(--color-palette-backdrop-end) 140%);
+  background-size: 200px 200px, auto;
+  color: var(--color-on-dark);
+}
+
+.box {
+  width: min(760px, 100%);
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  color: var(--color-on-dark-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.04em;
+}
+
+.keys {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.close {
+  flex: none;
+  min-width: var(--size-target);
+  min-height: var(--size-target);
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-on-dark-border);
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--color-on-dark);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
+
+.input {
+  width: 100%;
+  min-height: var(--size-target);
+  margin: var(--space-4) 0 var(--space-6);
+  padding: 0 var(--space-5);
+  border: 1px solid var(--color-on-dark-border);
+  border-radius: var(--radius-pill);
+  outline: none;
+  background: var(--color-on-dark-fill);
+  color: var(--color-on-dark);
+  font-size: var(--text-lg);
+}
+
+.input::placeholder {
+  color: var(--color-on-dark-placeholder);
+}
+
+.input:focus {
+  border-color: var(--color-on-dark);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+}
+
+.item,
+.itemActive {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  width: 100%;
+  border: 0;
+  background: none;
+  font-size: var(--text-palette);
+  letter-spacing: -0.045em;
+  line-height: 1.12;
+  text-align: left;
+}
+
+.item {
+  color: var(--color-palette-idle);
+  font-weight: 300;
+}
+
+.itemActive {
+  color: var(--color-on-dark);
+  font-weight: 500;
+}
+
+.dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+  opacity: 0;
+}
+
+.itemActive .dot {
+  opacity: 1;
+}
+
+.enter {
+  margin-left: auto;
+  color: var(--color-on-dark-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-md);
+  font-weight: 400;
+  letter-spacing: 0;
+}

@@ -54,3 +54,30 @@ export const TRY_PROMPTS: TryPrompt[] = [
 export const PILL_COMMANDS: Command[] = [COMMANDS.rewrite, COMMANDS.shorter, COMMANDS.grammar]
 export const TONE_COMMANDS: Command[] = [COMMANDS.formal, COMMANDS.warmer, COMMANDS.keep]
 export const REFINE_COMMANDS: Command[] = [COMMANDS.formal, COMMANDS.warmer, COMMANDS.keep, COMMANDS.shorter]
+export const PALETTE_COMMANDS: Command[] = [
+  COMMANDS.rewrite,
+  COMMANDS.shorter,
+  COMMANDS.formal,
+  COMMANDS.warmer,
+  COMMANDS.grammar,
+  COMMANDS.keep,
+  COMMANDS.measurable,
+]
+
+const IS_MAC = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform)
+
+/** The modifier key as this keyboard labels it. */
+export const MOD_KEY = IS_MAC ? '⌘' : 'Ctrl'
+
+export interface ShortcutRow {
+  keys: string
+  description: string
+}
+
+export const SHORTCUTS: ShortcutRow[] = [
+  { keys: '/', description: 'Command palette' },
+  { keys: `${MOD_KEY} ↵`, description: 'Accept all changes' },
+  { keys: 'Esc', description: 'Reject the suggestion' },
+  { keys: `${MOD_KEY} Z`, description: 'Undo the last applied suggestion' },
+  { keys: '?', description: 'These shortcuts' },
+]

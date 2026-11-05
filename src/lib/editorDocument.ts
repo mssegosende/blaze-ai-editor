@@ -224,6 +224,14 @@ export function placeFromSection(editor: Editor, position: number): SuggestionPl
   }
 }
 
+/**
+ * What the palette would act on: the selection if there is one, otherwise the
+ * section holding the cursor. Null when neither has any text.
+ */
+export function placeForPalette(editor: Editor): SuggestionPlace | null {
+  return placeFromSelection(editor) ?? placeFromSection(editor, editor.state.selection.from)
+}
+
 /** The prompts whose section is still there and still has text. */
 export function availablePrompts<Prompt extends { heading: string }>(editor: Editor, prompts: Prompt[]): Prompt[] {
   return prompts.filter((prompt) => placeFromHeading(editor, prompt.heading) !== null)

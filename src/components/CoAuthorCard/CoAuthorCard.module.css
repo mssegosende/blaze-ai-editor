@@ -207,6 +207,22 @@
   letter-spacing: -0.02em;
 }
 
+.keys {
+  padding: var(--space-5);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  background: var(--color-sheet);
+  color: var(--color-ink);
+}
+
+.keysLabel {
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+}
+
 .tip {
   padding: 2px var(--space-1);
   color: var(--color-muted);

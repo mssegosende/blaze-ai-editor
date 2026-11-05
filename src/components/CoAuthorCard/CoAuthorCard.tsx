@@ -1,4 +1,4 @@
-import type { Command, TryPrompt } from '../../constants'
+import type { Command, ShortcutRow, TryPrompt } from '../../constants'
 import type { CardView, ReviewView } from '../../lib/cardView'
 import type { ChangeDecision } from '../../lib/diff'
 import { changesOf } from '../../lib/diff'
@@ -6,6 +6,7 @@ import { ChangeRow } from '../ChangeRow/ChangeRow'
 import { DiffView } from '../DiffView/DiffView'
 import { EmptyState } from '../EmptyState/EmptyState'
 import { RefineControls } from '../RefineControls/RefineControls'
+import { ShortcutList } from '../ShortcutList/ShortcutList'
 import styles from './CoAuthorCard.module.css'
 
 export interface ReviewActions {
@@ -32,6 +33,7 @@ interface CoAuthorCardProps {
   onSubmitRefineText: () => void
   tryPrompts: TryPrompt[]
   onTry: (prompt: TryPrompt) => void
+  shortcuts: ShortcutRow[]
 }
 
 function pad(count: number): string {
@@ -66,7 +68,7 @@ function Review({
   refineCommands,
   refineText,
   onSubmitRefineText,
-}: Omit<CoAuthorCardProps, 'view' | 'tryPrompts' | 'onTry'> & { view: ReviewView }) {
+}: Omit<CoAuthorCardProps, 'view' | 'tryPrompts' | 'onTry' | 'shortcuts'> & { view: ReviewView }) {
   const changes = changesOf(view.diff)
   const total = changes.length
   const decided = changes.filter((change) => view.decisions.has(change.id)).length
@@ -175,6 +177,7 @@ export function CoAuthorCard({
   onSubmitRefineText,
   tryPrompts,
   onTry,
+  shortcuts,
 }: CoAuthorCardProps) {
   return (
     <aside className={styles.panel} aria-label="Co-author">
@@ -223,6 +226,12 @@ export function CoAuthorCard({
           />
         )}
       </div>
+      {view.kind === 'idle' && (
+        <div className={styles.keys}>
+          <h3 className={styles.keysLabel}>Shortcuts</h3>
+          <ShortcutList rows={shortcuts} />
+        </div>
+      )}
       {view.kind === 'review' && view.diff.mode === 'inline' && view.diff.changeCount > 0 && (
         <p className={styles.tip}>Click a change to select it, or use the arrows.</p>
       )}

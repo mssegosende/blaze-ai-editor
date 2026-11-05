@@ -9,6 +9,7 @@ import {
   normalizeMarkdown,
   placeFromHeading,
   placeFromSection,
+  placeForPalette,
   placeFromSelection,
 } from './editorDocument'
 
@@ -218,6 +219,41 @@ describe('placeFromHeading', () => {
 
   it('finds nothing when the heading is gone', () => {
     expect(placeFromHeading(editorWith(RICH), 'Success metrics')).toBeNull()
+  })
+})
+
+describe('placeForPalette', () => {
+  it('the palette names its target: the section holding the cursor', () => {
+    const editor = editorWith(SAMPLE_DOCUMENT)
+    editor.commands.setTextSelection(positionOf(editor, 'harder tickets'))
+    const place = placeForPalette(editor)
+    expect(place?.title).toBe('Why now')
+    expect(place?.kind).toBe('section')
+  })
+
+  it('a selection comes first, and is what the palette acts on', () => {
+    const editor = editorWith(SAMPLE_DOCUMENT)
+    selectText(editor, 'harder tickets')
+    const place = placeForPalette(editor)
+    expect(place?.kind).toBe('selection')
+    expect(place?.markdown).toBe('harder tickets')
+    expect(place?.title).toBe('Why now')
+  })
+
+  it('a cursor on an empty line in a section acts on that section', () => {
+    const editor = editorWith('## Head\n\nSome text here.\n\n## Next\n\nOther.')
+    editor.commands.setTextSelection(positionOf(editor, 'here.') + 5)
+    editor.commands.splitBlock()
+    const place = placeForPalette(editor)
+    expect(place?.title).toBe('Head')
+    expect(place?.markdown).toContain('Some text here.')
+    expect(place?.markdown).not.toContain('Other')
+  })
+
+  it('a cursor on the title has no target', () => {
+    const editor = editorWith(RICH)
+    editor.commands.setTextSelection(positionOf(editor, 'Title'))
+    expect(placeForPalette(editor)).toBeNull()
   })
 })
 

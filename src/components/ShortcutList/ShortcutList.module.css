@@ -1,0 +1,23 @@
+.list {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-3) var(--space-5);
+  margin-top: var(--space-3);
+  font-size: var(--text-md);
+}
+
+.row {
+  display: contents;
+}
+
+.key {
+  display: inline-block;
+  padding: 1px var(--space-2);
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-xs);
+  background: var(--color-sheet);
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  font-weight: 500;
+}

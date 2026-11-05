@@ -83,22 +83,21 @@ export function useSuggestion(editor: Editor, showNotice: (message: string, undo
   const askAbout = useCallback(
     (target: SuggestionPlace, command: Command) => {
       const ask: Ask = { label: command.label, instruction: command.instruction, currentSuggestion: null }
+      // The highlight takes over from the selection. If the selection stayed,
+      // choosing the same words again wouldn't count as a change and the pill
+      // wouldn't come back after a cancel or reject.
+      if (target.kind === 'selection') editor.commands.setTextSelection(target.to)
       setHasAsked(true)
       dispatch({ type: 'begin', place: target, ask })
       void send(target, ask)
     },
-    [send],
+    [editor, send],
   )
 
   const askAboutSelection = useCallback(
     (command: Command) => {
       const target = placeFromSelection(editor)
-      if (!target) return
-      // The highlight takes over from the selection. If the selection stayed,
-      // choosing the same words again wouldn't count as a change and the pill
-      // wouldn't come back after a cancel or reject.
-      editor.commands.setTextSelection(target.to)
-      askAbout(target, command)
+      if (target) askAbout(target, command)
     },
     [askAbout, editor],
   )
@@ -196,6 +195,9 @@ export function useSuggestion(editor: Editor, showNotice: (message: string, undo
 
   return {
     cardView: deriveCardView(session, ai.state),
+    askAbout,
+    /** What the palette should act on during a review: the same text, as a refine. */
+    reviewingPlace: iteration ? session?.place ?? null : null,
     askAboutSelection,
     askAboutHeading,
     hasAsked,

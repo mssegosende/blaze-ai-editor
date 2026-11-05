@@ -47,3 +47,34 @@
   font-family: var(--font-mono);
   font-size: var(--text-micro);
 }
+
+.buttons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: auto;
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--size-target);
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-on-dark-border);
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--color-on-dark);
+  font-size: var(--text-md);
+  font-weight: 500;
+}
+
+.button:hover {
+  background: var(--color-on-dark-hover);
+}
+
+.key {
+  color: var(--color-on-dark-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}

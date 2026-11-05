@@ -4,9 +4,11 @@ interface SidebarProps {
   appName: string
   documentTitle: string
   documentSubtitle: string
+  onCommands: () => void
+  onShortcuts: () => void
 }
 
-export function Sidebar({ appName, documentTitle, documentSubtitle }: SidebarProps) {
+export function Sidebar({ appName, documentTitle, documentSubtitle, onCommands, onShortcuts }: SidebarProps) {
   return (
     <aside className={styles.sidebar}>
       <p className={styles.logo}>{appName}</p>
@@ -14,6 +16,14 @@ export function Sidebar({ appName, documentTitle, documentSubtitle }: SidebarPro
       <div className={styles.document}>
         {documentTitle}
         <span className={styles.subtitle}>{documentSubtitle}</span>
+      </div>
+      <div className={styles.buttons}>
+        <button className={styles.button} type="button" onClick={onCommands}>
+          Commands <span className={styles.key}>/</span>
+        </button>
+        <button className={styles.button} type="button" onClick={onShortcuts}>
+          Shortcuts <span className={styles.key}>?</span>
+        </button>
       </div>
     </aside>
   )
