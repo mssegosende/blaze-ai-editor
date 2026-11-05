@@ -37,7 +37,7 @@ Test names are the names the tests will have. Update the status when a row is pr
 | # | Brief | Proof (file or test) | Status |
 |---|---|---|---|
 | D1 | "Host your code on GitHub or GitLab and send us the link" | Repository link at submission | planned |
-| D2 | "Include a README with: how to run it, what you built, and what you'd do differently with more time" | `README.md`, with all three headings; the mock adapter under "with more time" | planned |
+| D2 | "Include a README with: how to run it, what you built, and what you'd do differently with more time" | `README.md`, with all three headings; the mock adapter under "with more time" | done |
 | D3 | "Save your AI session(s)", "raw, unedited session files exactly as your tool saved them", "The only change allowed is to mask secrets", "commit the files to the git repository along with the project code" | Folder chosen at delivery; see "Delivery checklist" | planned |
 
 **What We Evaluate**
@@ -47,8 +47,8 @@ Test names are the names the tests will have. Update the status when a row is pr
 | E1 | The experience: "Is it intuitive? Can we open it, write something, and get useful AI suggestions without reading docs?" | S25 (first-open state); `src/lib/editorDocument.test.ts` and `src/lib/applySuggestion.test.ts`: suggestions on text just typed; `e2e/core.spec.ts`: "suggestions work on text the user just typed", from typing to accept | done |
 | E2 | AI integration quality: "Does the agent feel like a collaborator or a gimmick? Are diffs clear and useful?" | "Model comparison" and "Context comparison" below; `src/lib/diff.test.ts`; rationale shown in the card | done |
 | E3 | How you used AI to build it: "Did you use AI tools effectively to ship faster? Can you explain the choices made?" | "Decisions" below; session files (D3); `CLAUDE.md` | planned |
-| E4 | Code quality: "Is the code organized, readable, and something a teammate could pick up?" | `CLAUDE.md`; `pnpm lint`; `pnpm build`; `pnpm test` | planned |
-| E5 | Taste & judgment: "What did you prioritize? What did you intentionally leave out? Trade-offs matter more than features." | `README.md`; "Decisions" below | planned |
+| E4 | Code quality: "Is the code organized, readable, and something a teammate could pick up?" | `CLAUDE.md`; `pnpm lint`; `pnpm build`; `pnpm test` | done |
+| E5 | Taste & judgment: "What did you prioritize? What did you intentionally leave out? Trade-offs matter more than features." | `README.md`; "Decisions" below | done |
 
 **What We Don't Care About**
 
@@ -101,7 +101,7 @@ Test names are the names the tests will have. Update the status when a row is pr
 | S37 | The first request accepts free text, in the selection pill and the palette | See C6 | done |
 | S38 | A restructured section is accepted in one transaction and keeps headings, lists, bold and links | tests "accepting a restructured section is one transaction", "a restructured section keeps headings, lists, bold and links" | done |
 | S39 | Suggestions work on text the user just typed, not only the sample document | test "suggestions work on text the user just typed" | done |
-| S40 | Described as a deliberately single-step agent, and never denied to be one, in the README, `NOTES.md` and UI | Decision 7; `CLAUDE.md`; manual search before delivery | planned |
+| S40 | Described as a deliberately single-step agent, and never denied to be one, in the README, `NOTES.md` and UI | Decision 7; `CLAUDE.md`; manual search before delivery | done |
 | S41 | Any restructured section is a single before/after block, all or nothing | `src/lib/diff.test.ts`: "a restructured section is a single before/after block", "a reorder under 60% changed is still a block", "a restructured section is all or nothing, so moved text can never appear twice", "rewording a section in place stays word by word"; `src/lib/applySuggestion.test.ts`: "accepting a restructured block from its diff is one undo and leaves nothing twice" | done |
 | S42 | Browser checks live in the repo and run with `pnpm test:e2e` | `e2e/`, `playwright.config.ts`, `package.json` | done |
 | S43 | The browser tests never call the real API | `playwright.config.ts` starts Vite only; the fixture in `e2e/support.ts`; `e2e/safety.spec.ts`: "nothing is allowed to leave the machine", "a suggestion is answered by the stub, with no API host contacted" | done |
