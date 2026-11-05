@@ -83,6 +83,8 @@ Markdown goes in and out, so bold and links survive. That creates a trap: a chan
 
 The main reason is time. I time-boxed the build, and inline tracked changes were the riskiest part, because they mean mapping diff ranges to Tiptap document positions. The card was the safe path that still shows every change before it's applied. The document only gets a highlight marking what the suggestion is about.
 
+The card is a review panel, not a chat. There is no conversation: no thread of messages, and nothing to scroll back through. Every action in it is tied to a passage highlighted in the text, and refining keeps earlier versions of that passage, not a message history.
+
 **What else it gives:** the document you're reading is always your real text, so an abandoned suggestion leaves nothing behind. The card also has room for one row of 44px controls, "Change 2 of 6 ‹ › Keep Discard", which inline changes couldn't hold without wrecking the text.
 **What it costs:** your eyes move between the document and the card, and you read the change away from its surroundings. Inline tracked changes are the first thing I'd add with more time.
 

@@ -3,6 +3,9 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=22.9.0"
+  },
   "scripts": {
     "dev": "concurrently --names web,api --kill-others-on-fail \"vite\" \"pnpm dev:server\"",
     "dev:server": "tsx watch --env-file-if-exists=.env server/index.ts",

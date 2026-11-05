@@ -22,7 +22,7 @@ A Markdown editor in the browser where an AI works as a co-author. See `NOTES.md
 - Out of scope: routing, global state libraries, UI kits, animation libraries.
 - UI copy and code in English.
 - Before every commit, `pnpm lint` and `pnpm build` must pass, and the `.env` rules below apply.
-- Design reference: `docs/design/`. Use the screenshots by what they show, not by their file names. Where the mockup conflicts with the accessibility rules above, the rules win.
+- Design reference: `docs/design/`, described in its README. Where the mockup conflicts with the accessibility rules above, the rules win.
 
 - Wording: the brief calls it an "AI agent". In the README, `NOTES.md` and the UI, describe it as a deliberately single-step agent: one action, one model call, the human approves every change. Never deny that it's an agent.
 
