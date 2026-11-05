@@ -1,3 +1,4 @@
+import { APP_NAME } from '../shared/appName.ts'
 import type { SuggestErrorCode, SuggestRequest, Suggestion } from '../shared/contract.ts'
 import { parseModelOutput } from './parseModelOutput.ts'
 import { buildUserMessage, SUGGESTION_SCHEMA, SYSTEM_PROMPT } from './prompt.ts'
@@ -51,7 +52,7 @@ export async function callModel(
       headers: {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
-        'X-Title': 'Blaze',
+        'X-Title': APP_NAME,
       },
       body: JSON.stringify({
         model,

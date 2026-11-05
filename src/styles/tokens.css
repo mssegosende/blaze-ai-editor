@@ -1,0 +1,106 @@
+/*
+ * The only file with raw color, font, spacing and radius values. Values come
+ * from docs/design/mockup.html, except where it misses AA contrast or the 44px
+ * target size. Those are marked "AA" or "44px", with the measured ratio.
+ */
+:root {
+  /* Color: surfaces */
+  --color-app: #f5f3f0;
+  --color-sheet: #ffffff;
+  --color-soft: #edeae6;
+  --color-navy: #0f223a;
+  --color-navy-light: #2f466f;
+  --color-sky: #9ab3eb;
+
+  /* Color: text on light surfaces */
+  --color-ink: #0f223a;
+  --color-body: #1f2a3d;
+  --color-muted: #5f6672; /* AA: 5.22:1 on the app background, 5.78:1 on white */
+  --color-gutter: var(--color-muted); /* AA: the mockup's #a8a39a is 2.51:1 on white */
+
+  /* Color: text on the navy surfaces */
+  --color-on-dark: #ffffff;
+  --color-on-dark-soft: rgb(255 255 255 / 0.82);
+  --color-on-dark-muted: rgb(255 255 255 / 0.7); /* AA: 5.61:1 at the lightest navy */
+  --color-on-dark-placeholder: rgb(255 255 255 / 0.6);
+  --color-on-dark-border: rgb(255 255 255 / 0.25);
+  --color-on-dark-hairline: rgb(255 255 255 / 0.1);
+  --color-on-dark-fill: rgb(255 255 255 / 0.07);
+  --color-on-dark-hover: rgb(255 255 255 / 0.12);
+
+  /* Color: diff on the navy card */
+  --color-diff-removed: rgb(255 255 255 / 0.7); /* AA: the mockup's #8e8a7c is 2.73:1 here */
+  --color-diff-added: #ffffff;
+  --color-diff-added-fill: rgb(154 179 235 / 0.22);
+  --color-diff-added-line: var(--color-sky);
+  --color-diff-focus: #ffffff;
+
+  /* Color: palette and overlays */
+  --color-palette-idle: rgb(255 255 255 / 0.42); /* AA: the mockup's 0.28 is 2.50:1 */
+  --color-palette-backdrop-start: rgb(15 34 58 / 0.97);
+  --color-palette-backdrop-end: rgb(47 70 111 / 0.97);
+  --color-scrim: rgb(24 26 77 / 0.35);
+
+  /* Color: details on light surfaces */
+  --color-line: rgb(24 26 77 / 0.08);
+  --color-line-strong: rgb(24 26 77 / 0.18);
+  --color-selection: rgb(154 179 235 / 0.55);
+  --color-target-fill: rgb(154 179 235 / 0.28);
+  --color-shadow-soft: rgb(24 26 77 / 0.06);
+  --color-shadow: rgb(24 26 77 / 0.25);
+  --color-shadow-strong: rgb(24 26 77 / 0.3);
+
+  /* Fonts */
+  --font-sans: 'Inter Tight', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --font-wide: 'Archivo', sans-serif;
+
+  /* Font sizes */
+  --text-micro: 11px;
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-md: 14px;
+  --text-lg: 15px;
+  --text-body: 18px;
+  --text-title: 20px;
+  --text-card-title: 22px;
+  --text-think: 30px;
+  --text-h1: clamp(30px, 3.4vw, 42px);
+  --text-counter: 96px;
+  --text-palette: clamp(34px, 5.2vw, 62px);
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 6px;
+  --space-3: 8px;
+  --space-4: 12px;
+  --space-5: 14px;
+  --space-6: 18px;
+  --space-7: 22px;
+  --space-8: 28px;
+  --space-9: 42px;
+  --space-sheet-gap: clamp(20px, 5vw, 72px);
+  --space-sheet-top: clamp(28px, 5vw, 64px);
+  --space-sheet-x: clamp(24px, 6vw, 84px);
+  --space-sheet-bottom: 72px;
+  --space-page-end: 120px;
+  --offset-gutter: -40px;
+  --offset-target-bar: -18px;
+
+  /* Radii */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-pill: 999px;
+
+  /* Sizes */
+  --size-target: 44px; /* 44px: the mockup's buttons are about 31-40px tall */
+  --size-sidebar: 232px;
+  --size-panel: 384px;
+  --size-sheet: 820px;
+
+  /* Grain: a noise tile that takes the shine off the navy, like a riso print */
+  --noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  .7 0 0 0 -.33'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  --surface-navy: var(--noise), linear-gradient(160deg, var(--color-navy) 40%, var(--color-navy-light) 160%);
+}

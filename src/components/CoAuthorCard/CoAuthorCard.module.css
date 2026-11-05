@@ -1,0 +1,90 @@
+.panel {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  height: 100vh;
+  padding: var(--space-8) var(--space-7) var(--space-9) 0;
+  overflow: auto;
+}
+
+.card {
+  padding: var(--space-7) var(--space-7) var(--space-7);
+  border-radius: var(--radius-lg);
+  background: var(--surface-navy);
+  background-size: 200px 200px, auto;
+  color: var(--color-on-dark);
+}
+
+.label {
+  color: var(--color-on-dark-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+}
+
+.counter {
+  margin: var(--space-5) 0 var(--space-2);
+  font-size: var(--text-counter);
+  font-weight: 200;
+  letter-spacing: -0.06em;
+  line-height: 0.9;
+}
+
+.counterRow {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-5);
+}
+
+.counterNote {
+  padding-bottom: var(--space-3);
+  color: var(--color-on-dark-soft);
+  font-size: var(--text-md);
+  line-height: 1.25;
+}
+
+.title {
+  font-size: var(--text-card-title);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.body {
+  margin-top: var(--space-3);
+  color: var(--color-on-dark-soft);
+  font-size: var(--text-md);
+  line-height: 1.5;
+}
+
+.thinking {
+  margin: var(--space-6) 0 var(--space-1);
+  font-size: var(--text-think);
+  font-weight: 300;
+  letter-spacing: -0.03em;
+}
+
+.chip {
+  display: inline-block;
+  margin-top: var(--space-4);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-xs);
+  background: var(--color-on-dark-hairline);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.why {
+  margin-top: var(--space-4);
+  color: var(--color-on-dark);
+  font-size: var(--text-lg);
+  line-height: 1.5;
+}
+
+.diff {
+  margin-top: var(--space-6);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-on-dark-hairline);
+}

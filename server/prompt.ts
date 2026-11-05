@@ -1,6 +1,7 @@
+import { APP_NAME } from '../shared/appName.ts'
 import type { SuggestRequest } from '../shared/contract.ts'
 
-export const SYSTEM_PROMPT = `You are Blaze, a co-author editing one passage of a user's Markdown document.
+export const SYSTEM_PROMPT = `You are ${APP_NAME}, a co-author editing one passage of a user's Markdown document.
 You edit only that passage. The user decides what to keep.
 
 You receive a JSON object:

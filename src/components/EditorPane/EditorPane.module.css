@@ -1,0 +1,115 @@
+.column {
+  min-width: 0;
+  padding: var(--space-8) var(--space-sheet-gap) var(--space-page-end);
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: var(--size-sheet);
+  margin-bottom: var(--space-6);
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
+
+.sheet {
+  max-width: var(--size-sheet);
+  margin-top: var(--space-5);
+  padding: var(--space-sheet-top) var(--space-sheet-x) var(--space-sheet-bottom);
+  border-radius: var(--radius-md);
+  background: var(--color-sheet);
+  box-shadow: 0 1px 0 var(--color-shadow-soft), 0 20px 50px -30px var(--color-shadow);
+}
+
+.fileName {
+  margin-bottom: var(--space-7);
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
+
+.sheet :global(.tiptap) {
+  outline: none;
+  counter-reset: section;
+}
+
+.sheet :global(.tiptap) ::selection {
+  background: var(--color-selection);
+}
+
+.sheet :global(.tiptap h1) {
+  margin-bottom: var(--space-3);
+  font-size: var(--text-h1);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+}
+
+/* Section numbers come from CSS, so they're never part of the document. */
+.sheet :global(.tiptap h2) {
+  position: relative;
+  margin: var(--space-9) 0 var(--space-4);
+  font-size: var(--text-title);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  counter-increment: section;
+}
+
+.sheet :global(.tiptap h2)::before {
+  content: counter(section, decimal-leading-zero);
+  position: absolute;
+  top: var(--space-1);
+  left: var(--offset-gutter);
+  color: var(--color-gutter);
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.sheet :global(.tiptap p),
+.sheet :global(.tiptap li) {
+  color: var(--color-body);
+  font-size: var(--text-body);
+  line-height: 1.7;
+}
+
+.sheet :global(.tiptap ul),
+.sheet :global(.tiptap ol) {
+  padding-left: var(--space-7);
+}
+
+.sheet :global(.tiptap li) {
+  margin: var(--space-1) 0;
+}
+
+.sheet :global(.tiptap li)::marker {
+  color: var(--color-navy-light);
+}
+
+.sheet :global(.tiptap a) {
+  color: var(--color-navy-light);
+  text-decoration: underline;
+}
+
+/* What the current suggestion is about. */
+.sheet :global(.tiptap .blaze-target) {
+  background: var(--color-target-fill);
+}
+
+.sheet :global(.tiptap .blaze-target-block) {
+  position: relative;
+}
+
+.sheet :global(.tiptap .blaze-target-block)::after {
+  content: '';
+  position: absolute;
+  top: var(--space-2);
+  bottom: var(--space-2);
+  left: var(--offset-target-bar);
+  width: 3px;
+  border-radius: var(--radius-xs);
+  background: var(--color-navy);
+}

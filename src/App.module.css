@@ -1,0 +1,6 @@
+.app {
+  display: grid;
+  grid-template-columns: var(--size-sidebar) minmax(0, 1fr) var(--size-panel);
+  min-height: 100vh;
+  background: var(--color-app);
+}

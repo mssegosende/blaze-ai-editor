@@ -1,0 +1,34 @@
+.text {
+  color: var(--color-on-dark-soft);
+  font-size: var(--text-lg);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* Deleted and added text differ by more than color: strike and underline. */
+.removed {
+  color: var(--color-diff-removed);
+  text-decoration: line-through;
+}
+
+.added {
+  border-bottom: 2px solid var(--color-diff-added-line);
+  background: var(--color-diff-added-fill);
+  color: var(--color-diff-added);
+  text-decoration: none;
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.blockLabel {
+  margin-top: var(--space-3);
+  color: var(--color-on-dark-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  letter-spacing: 0.04em;
+}

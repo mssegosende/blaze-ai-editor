@@ -14,7 +14,7 @@ Test names are the names the tests will have. Update the status when a row is pr
 
 | # | Brief | Proof (file or test) | Status |
 |---|---|---|---|
-| C1 | "Don't build a full markdown editor from scratch, a prebuilt like tiptap or similar is fine." | `package.json` (`@tiptap/*`) | planned |
+| C1 | "Don't build a full markdown editor from scratch, a prebuilt like tiptap or similar is fine." | `package.json` (`@tiptap/*`) | done |
 | C2 | "The user is always in control" | test "the document does not change until accept" | planned |
 | C3 | "rewrite paragraphs" | Rewrite command in `src/constants.ts`; test "accepting every change reproduces the rewrite exactly" | planned |
 | C4 | "fix tone" | More formal and Warmer commands in `src/constants.ts`; `server/prompt.test.ts` | planned |
@@ -25,8 +25,8 @@ Test names are the names the tests will have. Update the status when a row is pr
 
 | # | Brief | Proof (file or test) | Status |
 |---|---|---|---|
-| B0 | "A single page web app, no auth required" | `src/App.tsx` (no router, no login) | planned |
-| B1 | "The user can write and edit Markdown in a browser-based editor" | `src/components/EditorPane/`; test "markdown round trip keeps headings, lists, bold and links" | planned |
+| B0 | "A single page web app, no auth required" | `src/App.tsx` (no router, no login) | done |
+| B1 | "The user can write and edit Markdown in a browser-based editor" | `src/components/EditorPane/`; test "markdown round trip keeps headings, lists, bold and links" | done |
 | B2 | "An AI agent can suggest changes to the document (or a selection)" | Decisions 7 and 14; `src/lib/sections.ts`; tests "a selection request sends only the selected Markdown", "the current section is the blocks under the cursor's heading", "a section command sends only that section" | planned |
 | B3 | "Suggestions appear as visible diffs — the user can see exactly what the AI wants to change before accepting" | `src/components/DiffView/`; `src/lib/diff.test.ts`; test "a paragraph split shows up as a visible change" | planned |
 | B4 | "The user can accept, reject, or refine the AI's suggestions" | tests "accepting every change reproduces the rewrite exactly", "rejecting every change reproduces the original exactly", "partial accept keeps only the chosen changes"; `server/prompt.test.ts`: "a refine request sends the original, the current suggestion and the instruction" | planned |
@@ -64,7 +64,7 @@ Test names are the names the tests will have. Update the status when a row is pr
 |---|---|---|---|
 | S1 | Each change can be accepted or rejected separately | test "partial accept keeps only the chosen changes" | done |
 | S2 | All changes can be accepted or rejected at once | tests "accepting every change reproduces the rewrite exactly", "rejecting every change reproduces the original exactly" | done |
-| S3 | The diff is computed in the browser, not described by the model | `src/lib/diff.ts`; contract in `shared/contract.ts` | planned |
+| S3 | The diff is computed in the browser, not described by the model | `src/lib/diff.ts`; contract in `shared/contract.ts` | done |
 | S4 | Bold and links survive a suggestion | tests "partial accept never leaves unbalanced bold markers", "a changed URL is one change, never half a link", "changing link text keeps the URL" | done |
 | S5 | Over 60% changed shows one before/after block | tests "a full rewrite is a single before/after block", "exactly 60% changed stays word by word" | done |
 | S6 | Accept is a single transaction; Ctrl+Z undoes all of it | test "one undo restores the whole accepted suggestion" | planned |
@@ -76,10 +76,10 @@ Test names are the names the tests will have. Update the status when a row is pr
 | S12 | Malformed model output never reaches the UI as a suggestion | `server/parseModelOutput.test.ts`; `server/app.test.ts`: "malformed model output is an error, not a suggestion" | done |
 | S13 | One `pnpm dev` starts everything | `package.json` | planned |
 | S14 | No hardcoded colors in components | `src/styles/tokens.css`; manual search of `src/components/` | planned |
-| S15 | The app name lives in one constant | `src/constants.ts` | planned |
+| S15 | The app name lives in one constant | `shared/appName.ts`, used by the UI and the prompt | done |
 | S16 | The UI never calls fetch directly | `src/api/`; manual search of `src/components/` and `src/hooks/` | planned |
 | S17 | Accessibility: real buttons, labels, aria state, 44px targets, AA contrast | Manual audit; measured ratios recorded here | planned |
-| S18 | Opens straight into the editor with the sample document | `src/sampleDocument.ts`; `src/App.tsx` | planned |
+| S18 | Opens straight into the editor with the sample document | `src/sampleDocument.ts`; `src/App.tsx` | done |
 | S19 | Models compared 3 times per paragraph and instruction, with agreement next to quality, speed and cost | `scripts/compareModels.ts`, `scripts/scoreComparison.ts`, `docs/model-comparison.json`; "Model comparison" below | done |
 | S20 | One model recommended | "Model comparison" below; `MODEL` in `server/index.ts` | done |
 | S21 | Section context kept only if it measurably helps | `scripts/compareContext.ts`, `docs/context-comparison.json`; "Context comparison" below | done |
@@ -100,7 +100,7 @@ Test names are the names the tests will have. Update the status when a row is pr
 | S36 | `.gitattributes` with `* text=auto`; mockup renamed to `mockup.html` | `.gitattributes`; `docs/design/mockup.html` | done |
 | S37 | The first request accepts free text, in the selection pill and the palette | See C6 | planned |
 | S38 | A restructured section is accepted in one transaction and keeps headings, lists, bold and links | tests "accepting a restructured section is one transaction", "a restructured section keeps headings, lists, bold and links" | planned |
-| S39 | Suggestions work on text the user just typed, not only the sample document | test "suggestions work on text the user just typed" | planned |
+| S39 | Suggestions work on text the user just typed, not only the sample document | test "suggestions work on text the user just typed" | done |
 | S40 | Described as a deliberately single-step agent, and never denied to be one, in the README, `NOTES.md` and UI | Decision 7; `CLAUDE.md`; manual search before delivery | planned |
 
 ## Decisions
