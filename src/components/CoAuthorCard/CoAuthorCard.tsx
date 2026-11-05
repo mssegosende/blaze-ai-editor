@@ -106,7 +106,7 @@ function Review({
             onSelectChange={actions.selectChange}
           />
           {view.diff.restructured && (
-            <p className={styles.wholeNote}>This reorganizes the section, so you accept or reject it as a whole.</p>
+            <p className={styles.wholeNote}>This reorganizes the text, so you accept or reject it as a whole.</p>
           )}
           {view.diff.mode === 'inline' && (
             <ChangeRow

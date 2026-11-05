@@ -233,13 +233,30 @@ describe('computeDiff', () => {
       expect(computeDiff(ORIGINAL, ORIGINAL, 'section')).toMatchObject({ changeCount: 0, restructured: false })
     })
 
-    it('a selection is never treated as restructured', () => {
+    it('splitting a one-paragraph selection stays word by word', () => {
       const diff = computeDiff('First point here. Second point here.', 'First point here.\n\nSecond point here.', 'selection')
       expect(diff).toMatchObject({ mode: 'inline', restructured: false })
     })
 
-    it('a selection is the default target', () => {
-      expect(computeDiff(ORIGINAL, REORDERED).restructured).toBe(false)
+    it.each<[string, string, string]>([
+      ['reordering list items', ORIGINAL, REORDERED],
+      ['moving and merging list items', ORIGINAL, MOVED_AND_MERGED],
+      ['merging two paragraphs', 'First point here.\n\nSecond point here.', 'First point here and second point here.'],
+    ])('a multi-paragraph selection that is restructured is a single block: %s', (_label, original, rewrite) => {
+      const diff = computeDiff(original, rewrite, 'selection')
+      expect(diff).toMatchObject({ mode: 'block', changeCount: 1, restructured: true })
+    })
+
+    it('a reordered multi-paragraph selection is all or nothing, so moved text can never appear twice', () => {
+      const diff = computeDiff(ORIGINAL, REORDERED, 'selection')
+      const results = everyDecisionCombination(diff).map((decisions) => applyDecisions(diff, decisions))
+      expect(results.sort()).toEqual([ORIGINAL, REORDERED].sort())
+      for (const result of results) expect(count(result, 'Weekly reviews')).toBe(1)
+    })
+
+    it('rewording a multi-paragraph selection in place stays word by word', () => {
+      const reworded = ORIGINAL.replace('most common tickets', 'most frequent tickets')
+      expect(computeDiff(ORIGINAL, reworded, 'selection')).toMatchObject({ mode: 'inline', restructured: false })
     })
 
     it('a block rewritten beyond recognition does not count as moved', () => {

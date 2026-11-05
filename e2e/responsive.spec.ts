@@ -182,7 +182,7 @@ for (const width of WIDTHS) {
       await page.locator('.tiptap li', { hasText: 'A shared knowledge base' }).click()
       await page.waitForTimeout(100)
       await askAboutFirstSection(page, suggest, REORDERED)
-      await expect(card(page)).toContainText('This reorganizes the section')
+      await expect(card(page)).toContainText('This reorganizes the text')
       await expectHealthy(page, 'block')
     })
 

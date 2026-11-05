@@ -207,7 +207,7 @@ test.describe('restructuring', () => {
     await page.getByLabel(/something else/).fill('Put the weekly reviews first')
     await page.keyboard.press('Enter')
 
-    await expect(card(page)).toContainText('This reorganizes the section')
+    await expect(card(page)).toContainText('This reorganizes the text')
     await expect(card(page)).toContainText('Before')
     await expect(card(page)).toContainText('After')
     await expect(page.getByRole('button', { name: 'Keep', exact: true })).toHaveCount(0)
@@ -230,6 +230,6 @@ test.describe('restructuring', () => {
     suggest.reply('Right now the support team spends most of their day answering the same questions.')
     await page.getByRole('button', { name: 'Make “Why now” shorter' }).click()
     await expect(page.getByRole('button', { name: 'Keep', exact: true })).toBeVisible()
-    await expect(card(page)).not.toContainText('This reorganizes the section')
+    await expect(card(page)).not.toContainText('This reorganizes the text')
   })
 })

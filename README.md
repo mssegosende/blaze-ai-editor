@@ -75,7 +75,7 @@ The model returns only `{ "rewrite": "...", "rationale": "..." }`. It doesn't de
 
 Markdown goes in and out, so bold and links survive. That creates a trap: a changed URL can diff as two separate changes, and keeping only one gives a link nobody wrote. So I use `diffWordsWithSpace` rather than `diffWords`, which loses whitespace and hides paragraph splits. Changes separated only by whitespace merge, and links and bold or italic pairs change as a whole. Every combination of keep and discard is tested on invented cases.
 
-**What it costs:** two kinds of suggestion can't be reviewed word by word. Anything over 60% changed shows as one before/after block, because a word diff of a near-total rewrite is unreadable. Any restructured section does too, all or nothing, because a moved block is a removal plus an addition, and keeping only the addition would leave the text in the document twice.
+**What it costs:** two kinds of suggestion can't be reviewed word by word. Anything over 60% changed shows as one before/after block, because a word diff of a near-total rewrite is unreadable. So does restructured text, all or nothing, whether it's a section or a selection spanning several paragraphs, because a moved block is a removal plus an addition, and keeping only the addition would leave the text in the document twice.
 
 ### The diff is in the card, not inline
 

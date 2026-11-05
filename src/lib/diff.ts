@@ -17,7 +17,7 @@ export interface SuggestionDiff {
   changeCount: number
   /** Share of non-whitespace characters changed, from 0 to 1. */
   changedRatio: number
-  /** A section whose blocks were reordered, merged or split: all or nothing. */
+  /** Blocks were reordered, merged or split: all or nothing. */
   restructured: boolean
 }
 
@@ -210,11 +210,22 @@ export function isRestructured(original: string, rewrite: string): boolean {
 }
 
 /**
+ * Whether to look for restructuring. A section always, since it may be
+ * restructured on purpose. A selection only when it spans several blocks: the
+ * model isn't asked to restructure one, but it can still reorder or merge them.
+ * Splitting a one-paragraph selection stays word by word, since a split can't
+ * leave anything twice.
+ */
+function canBeRestructured(original: string, target: SuggestTarget): boolean {
+  return target === 'section' || blocksOf(original).length > 1
+}
+
+/**
  * Compares a passage with the model's rewrite. Pure: no editor, no DOM.
  *
- * A restructured section is always one block, whatever share of it changed: a
- * moved block is a removal plus an addition, so keeping only the addition would
- * leave the text in the document twice.
+ * Restructured text is always one block, whatever share of it changed: a moved
+ * block is a removal plus an addition, so keeping only the addition would leave
+ * the text in the document twice.
  */
 export function computeDiff(
   original: string,
@@ -222,7 +233,7 @@ export function computeDiff(
   target: SuggestTarget = 'selection',
 ): SuggestionDiff {
   const { drafts, changedRatio } = toDrafts(original, rewrite)
-  const restructured = target === 'section' && isRestructured(original, rewrite)
+  const restructured = canBeRestructured(original, target) && isRestructured(original, rewrite)
 
   if (restructured || changedRatio > BLOCK_THRESHOLD) {
     return {
