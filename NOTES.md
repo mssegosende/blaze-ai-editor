@@ -30,7 +30,7 @@ Test names are the names the tests will have. Update the status when a row is pr
 | B2 | "An AI agent can suggest changes to the document (or a selection)" | Decisions 7 and 14; `src/lib/sections.ts`; tests "a selection request sends only the selected Markdown", "the current section is the blocks under the cursor's heading", "a section command sends only that section" | done |
 | B3 | "Suggestions appear as visible diffs — the user can see exactly what the AI wants to change before accepting" | `src/components/DiffView/`; `src/lib/diff.test.ts`; test "a paragraph split shows up as a visible change" | done |
 | B4 | "The user can accept, reject, or refine the AI's suggestions" | tests "accepting every change reproduces the rewrite exactly", "rejecting every change reproduces the original exactly", "partial accept keeps only the chosen changes"; `server/prompt.test.ts`: "a refine request sends the original, the current suggestion and the instruction" | done |
-| B5 | "The experience feels collaborative — like working with a smart co-author, not a chatbot in a sidebar and not something that completes the whole document" | No chat history anywhere in the UI; still needs a walkthrough by a person; `SYSTEM_PROMPT` in `server/prompt.ts`; test "a section command sends only that section" | manual |
+| B5 | "The experience feels collaborative — like working with a smart co-author, not a chatbot in a sidebar and not something that completes the whole document" | No chat history anywhere in the UI; `SYSTEM_PROMPT` in `server/prompt.ts`; test "a section command sends only that section"; walked through by hand with the real model, all working: Try one, keep and discard per change, apply, Ctrl+Z, refine (Shorter, Keep my wording, More formal, free text), Ask on my own paragraph, commands on a section with nothing selected | done |
 
 **What to Submit**
 
@@ -55,7 +55,7 @@ Test names are the names the tests will have. Update the status when a row is pr
 | # | Brief | Proof (file or test) | Status |
 |---|---|---|---|
 | N1 | "Docker, databases, auth systems — don't add infrastructure you don't need" | `package.json`; no such files in the repository | done |
-| N2 | "Visual perfection — but it should be usable and not broken" | `e2e/`; S17 for accessibility; still needs a walkthrough by a person | manual |
+| N2 | "Visual perfection — but it should be usable and not broken" | `e2e/`; S17 for accessibility; walked through by hand with the real model, all working: the notice when editing a paragraph with a pending suggestion, Cancel while thinking, Ctrl+Enter, Esc and ?, and the missing-key message with Retry and Close. Narrow windows were not walked through by hand: they rest on `e2e/responsive.spec.ts` and the screenshots | done |
 | N3 | "Using a specific framework — React, Vue, Svelte, vanilla JS, whatever you're fast with" | React, per the project spec; no framework-specific claim to prove | done |
 
 ### From the project spec
@@ -338,7 +338,7 @@ Run on 2026-11-05, against the code at commit 09.
 
 **Code checks, by search.** No raw colors outside `tokens.css`. No `fetch` outside `src/api/`. No `useState`, `useReducer`, `useEffect` or `useRef` in `src/components/`. No `VITE_` variables. The built `dist/` contains neither the key's variable name nor an OpenRouter key prefix.
 
-**Browser tests.** `pnpm test:e2e` runs the flows in Chromium through Playwright, and every control's height is measured in `e2e/safety.spec.ts`. The first run on a machine needs `pnpm exec playwright install chromium`.
+**Browser tests.** `pnpm test:e2e` runs the flows in Chromium through Playwright, and every control's height is measured in `e2e/safety.spec.ts`. The first run on a machine needs `pnpm exec playwright install chromium`. `e2e/globalSetup.ts` loads the app once before the workers start, so they don't all wait on Vite's first compile.
 
 They never call the real API, for three separate reasons. They start Vite only, so the API server that holds the key isn't running. A fixture that applies to every test answers `/api/*` from a stub, and a call with no reply queued fails the test. Every other request to another host is blocked in the browser. The cost is that these tests prove the UI and the contract, not what a real model replies: that is what the comparisons are for.
 

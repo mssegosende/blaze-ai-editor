@@ -61,7 +61,7 @@ export class SuggestStub {
   }
 }
 
-const isLocal = (url: URL) => url.hostname === '127.0.0.1' || url.hostname === 'localhost'
+export const isLocal = (url: URL) => url.hostname === '127.0.0.1' || url.hostname === 'localhost'
 
 /** Applies to every test automatically, so no test can forget to stub the API. */
 export const test = base.extend<{ suggest: SuggestStub }>({
@@ -94,8 +94,8 @@ export { expect }
 /** Opens the app and waits for the editor. */
 export async function openApp(page: Page): Promise<void> {
   await page.goto('/')
-  // Longer than the default 5s: at the start of a run, every worker is waiting on
-  // a cold Vite to compile the app. A real break still ends the run: see maxFailures.
+  // Longer than the default 5s as a margin for a busy machine. Vite is already warm
+  // here: see globalSetup.ts. A real break still ends the run: see maxFailures.
   await expect(page.locator('.tiptap')).toBeVisible({ timeout: 15_000 })
 }
 

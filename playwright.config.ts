@@ -4,6 +4,7 @@ const PORT = 5199
 
 export default defineConfig({
   testDir: 'e2e',
+  globalSetup: './e2e/globalSetup.ts',
   reporter: 'list',
   forbidOnly: true,
   // If the app doesn't compile, every test would wait out its timeout. Stop early instead.
