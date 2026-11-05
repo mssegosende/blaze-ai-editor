@@ -21,6 +21,7 @@ import {
 } from './constants'
 import type { Command } from './constants'
 import { useBlazeEditor } from './hooks/useBlazeEditor'
+import { useCardIntoView } from './hooks/useCardIntoView'
 import { useNotice } from './hooks/useNotice'
 import { usePalette } from './hooks/usePalette'
 import { useSelectionPill } from './hooks/useSelectionPill'
@@ -38,6 +39,7 @@ function Workspace({ editor }: { editor: Editor }) {
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
 
   const { cardView, review } = suggestion
+  const panelRef = useCardIntoView(cardView)
 
   const runCommand = (command: Command) => {
     suggestion.askAboutSelection(command)
@@ -124,6 +126,7 @@ function Workspace({ editor }: { editor: Editor }) {
           tryPrompts={tryPrompts}
           onTry={(prompt) => suggestion.askAboutHeading(prompt.heading, prompt.command)}
           shortcuts={SHORTCUTS}
+          panelRef={panelRef}
         />
       </div>
       {pill.position && (

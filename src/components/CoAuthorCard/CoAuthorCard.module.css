@@ -1,12 +1,21 @@
+/* Stacked below the document under 1024px, and sticky beside it from there. */
 .panel {
-  position: sticky;
-  top: 0;
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  height: 100vh;
-  padding: var(--space-8) 0 var(--space-9);
-  overflow: auto;
+  min-width: 0;
+  padding-bottom: var(--space-8);
+  scroll-margin-top: calc(var(--size-app-bar) + var(--space-3));
+}
+
+@media (min-width: 1024px) {
+  .panel {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    padding: var(--space-8) 0 var(--space-9);
+    overflow: auto;
+  }
 }
 
 .card {
@@ -214,12 +223,20 @@
   letter-spacing: -0.02em;
 }
 
+/* Phones have no shortcut keys to press. */
 .keys {
+  display: none;
   padding: var(--space-5);
   border: 1px solid var(--color-line);
   border-radius: var(--radius-lg);
   background: var(--color-sheet);
   color: var(--color-ink);
+}
+
+@media (min-width: 640px) {
+  .keys {
+    display: block;
+  }
 }
 
 .keysLabel {

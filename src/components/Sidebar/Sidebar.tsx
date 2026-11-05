@@ -10,7 +10,7 @@ interface SidebarProps {
 
 export function Sidebar({ appName, documentTitle, documentSubtitle, onCommands, onShortcuts }: SidebarProps) {
   return (
-    <aside className={styles.sidebar}>
+    <aside className={styles.sidebar} data-app-bar>
       <p className={styles.logo}>{appName}</p>
       <h2 className={styles.label}>01 · Document</h2>
       <div className={styles.document}>

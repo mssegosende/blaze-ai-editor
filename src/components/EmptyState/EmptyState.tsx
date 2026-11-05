@@ -13,8 +13,11 @@ export function EmptyState({ prompts, onTry }: EmptyStateProps) {
       <p className={styles.counter}>00</p>
       <p className={styles.title}>Nothing to review yet</p>
       <p className={styles.body}>
-        Select text in the document and pick an action, or press <kbd className={styles.key}>/</kbd>. Suggestions appear
-        here as a diff, and nothing changes until you accept.
+        Select text in the document and pick an action
+        <span className={styles.keyHint}>
+          , or press <kbd className={styles.key}>/</kbd>
+        </span>
+        . Suggestions appear here as a diff, and nothing changes until you accept.
       </p>
       {prompts.length > 0 && (
         <div className={styles.try}>

@@ -68,7 +68,7 @@ export function CommandPalette({
         {targetTitle === null ? (
           <>
             <div className={styles.top}>
-              <span>/ commands</span>
+              <span className={styles.target}>/ commands</span>
               <button className={styles.close} type="button" onClick={onClose} autoFocus>
                 Close
               </button>
@@ -78,7 +78,7 @@ export function CommandPalette({
         ) : (
           <>
             <div className={styles.top}>
-              <span>/ commands · on “{targetTitle}”</span>
+              <span className={styles.target}>/ commands · on “{targetTitle}”</span>
               <span className={styles.keys}>↑ ↓ to move · ↵ to run · esc to close</span>
               <button className={styles.close} type="button" tabIndex={-1} onClick={onClose}>
                 Close

@@ -6,6 +6,8 @@ export default defineConfig({
   testDir: 'e2e',
   reporter: 'list',
   forbidOnly: true,
+  // If the app doesn't compile, every test would wait out its timeout. Stop early instead.
+  maxFailures: 5,
   use: {
     baseURL: `http://127.0.0.1:${PORT}`,
     viewport: { width: 1440, height: 1000 },

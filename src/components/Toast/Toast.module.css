@@ -1,20 +1,32 @@
 .toast {
   position: fixed;
-  bottom: var(--space-8);
-  left: 50%;
+  right: var(--space-3);
+  bottom: var(--space-4);
+  left: var(--space-3);
   z-index: 70;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: var(--space-4);
   min-height: var(--size-target);
-  padding: 0 var(--space-6);
-  border-radius: var(--radius-pill);
+  padding: var(--space-1) var(--space-5);
+  border-radius: var(--radius-lg);
   background: var(--surface-navy);
   background-size: 200px 200px, auto;
   box-shadow: 0 10px 30px var(--color-shadow);
   color: var(--color-on-dark);
   font-size: var(--text-md);
-  transform: translateX(-50%);
+}
+
+@media (min-width: 640px) {
+  .toast {
+    right: auto;
+    bottom: var(--space-8);
+    left: 50%;
+    padding: 0 var(--space-6);
+    border-radius: var(--radius-pill);
+    transform: translateX(-50%);
+  }
 }
 
 .hidden {
@@ -26,6 +38,7 @@
 }
 
 .undo {
+  flex: none;
   min-width: var(--size-target);
   min-height: var(--size-target);
   border: 0;

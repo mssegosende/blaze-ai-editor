@@ -1,15 +1,35 @@
 .row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-1);
   margin-top: var(--space-5);
 }
 
+/* A row of its own wherever the buttons wouldn't fit beside it. */
 .position {
-  flex: 1;
+  flex: 1 1 100%;
   color: var(--color-on-dark-soft);
   font-size: var(--text-sm);
   white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .position {
+    flex-basis: 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  .position {
+    flex-basis: 100%;
+  }
+}
+
+@media (min-width: 1280px) {
+  .position {
+    flex-basis: 0;
+  }
 }
 
 .arrow,

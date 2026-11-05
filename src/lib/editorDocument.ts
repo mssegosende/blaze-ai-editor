@@ -260,6 +260,22 @@ export function placeForPalette(
   return atCursor ?? placeNearBlock(editor, firstVisibleBlock)
 }
 
+/** True under 1024px, where the card sits below the document instead of beside it. */
+export function isStackedLayout(): boolean {
+  return window.matchMedia('(max-width: 1023.98px)').matches
+}
+
+/**
+ * Brings a place back into view once the card is done with it. With the card
+ * stacked, the user is below the document and wouldn't see what just changed.
+ */
+export function showPlaceIfStacked(editor: Editor, position: number): void {
+  if (!isStackedLayout()) return
+  const { node } = editor.view.domAtPos(Math.min(position, editor.state.doc.content.size))
+  const element = node instanceof HTMLElement ? node : node.parentElement
+  element?.scrollIntoView({ block: 'center' })
+}
+
 /** Which top-level block is nearest the top of the viewport. Reads the DOM. */
 export function firstVisibleBlockIndex(editor: Editor): number {
   const { doc } = editor.state

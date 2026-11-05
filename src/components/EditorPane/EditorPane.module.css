@@ -1,6 +1,6 @@
 .column {
   min-width: 0;
-  padding: var(--space-8) 0 var(--space-page-end);
+  padding: var(--space-5) 0 var(--space-page-end);
 }
 
 .top {
@@ -24,6 +24,23 @@
   background: var(--color-sheet);
   color: var(--color-ink);
   font-size: var(--text-md);
+}
+
+/* Phones have no / key to press. */
+.keyHint {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .keyHint {
+    display: inline;
+  }
+}
+
+@media (min-width: 1024px) {
+  .column {
+    padding-top: var(--space-8);
+  }
 }
 
 .key {
@@ -61,6 +78,7 @@
 .sheet :global(.tiptap) {
   outline: none;
   counter-reset: section;
+  overflow-wrap: anywhere;
 }
 
 .sheet :global(.tiptap) ::selection {
@@ -85,16 +103,19 @@
   counter-increment: section;
 }
 
-.sheet :global(.tiptap h2)::before {
-  content: counter(section, decimal-leading-zero);
-  position: absolute;
-  top: var(--space-1);
-  left: var(--offset-gutter);
-  color: var(--color-gutter);
-  font-family: var(--font-mono);
-  font-size: var(--text-micro);
-  font-weight: 400;
-  letter-spacing: 0;
+/* No room in the margin for them on the smallest screens. */
+@media (min-width: 640px) {
+  .sheet :global(.tiptap h2)::before {
+    content: counter(section, decimal-leading-zero);
+    position: absolute;
+    top: var(--space-1);
+    left: var(--offset-gutter);
+    color: var(--color-gutter);
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    font-weight: 400;
+    letter-spacing: 0;
+  }
 }
 
 .sheet :global(.tiptap p),

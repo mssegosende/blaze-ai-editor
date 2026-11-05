@@ -1,15 +1,39 @@
+/* Spans the screen and wraps on narrow screens, and floats over the selection from 640px. */
 .pill {
   position: fixed;
+  top: var(--pill-top);
+  right: var(--space-3);
+  left: var(--space-3);
   z-index: 30;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
   gap: 2px;
   padding: var(--space-1);
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-lg);
   background: var(--surface-navy);
   background-size: 200px 200px, auto;
   box-shadow: 0 12px 34px var(--color-shadow-strong);
-  transform: translate(-50%, calc(-100% - var(--space-3)));
+  transform: translateY(calc(-100% - var(--space-3)));
+}
+
+.below {
+  transform: translateY(var(--space-3));
+}
+
+@media (min-width: 640px) {
+  .pill {
+    right: auto;
+    left: var(--pill-left);
+    flex-wrap: nowrap;
+    border-radius: var(--radius-pill);
+    transform: translate(-50%, calc(-100% - var(--space-3)));
+  }
+
+  .below {
+    transform: translate(-50%, var(--space-3));
+  }
 }
 
 .button {
@@ -38,19 +62,29 @@
 }
 
 .separator {
+  display: none;
   width: 1px;
   height: var(--space-6);
   margin: 0 2px;
   background: var(--color-on-dark-border);
 }
 
+@media (min-width: 640px) {
+  .separator {
+    display: block;
+  }
+}
+
 .form {
   display: flex;
+  flex: 1;
   align-items: center;
+  min-width: 0;
 }
 
 .input {
-  width: 260px;
+  flex: 1;
+  min-width: 0;
   min-height: var(--size-target);
   padding: 0 var(--space-4);
   border: 0;
@@ -58,6 +92,13 @@
   background: none;
   color: var(--color-on-dark);
   font-size: var(--text-md);
+}
+
+@media (min-width: 640px) {
+  .input {
+    flex: none;
+    width: 260px;
+  }
 }
 
 .input::placeholder {

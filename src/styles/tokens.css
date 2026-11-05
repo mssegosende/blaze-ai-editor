@@ -61,13 +61,13 @@
   --text-sm: 13px;
   --text-md: 14px;
   --text-lg: 15px;
-  --text-body: 18px;
+  --text-body: 17px;
   --text-title: 20px;
   --text-card-title: 22px;
   --text-think: 30px;
   --text-h1: clamp(30px, 3.4vw, 42px);
-  --text-counter: 96px;
-  --text-palette: clamp(34px, 5.2vw, 62px);
+  --text-counter: 56px;
+  --text-palette: clamp(30px, 5.2vw, 62px);
 
   /* Spacing */
   --space-1: 4px;
@@ -79,14 +79,14 @@
   --space-7: 22px;
   --space-8: 28px;
   --space-9: 42px;
-  --space-workspace-gap: 40px;
-  --space-workspace-x: 28px;
-  --space-sheet-top: clamp(28px, 5vw, 64px);
-  --space-sheet-x: clamp(24px, 6vw, 84px);
-  --space-sheet-bottom: 72px;
-  --space-page-end: 120px;
+  --space-workspace-gap: 0px;
+  --space-workspace-x: 12px;
+  --space-sheet-top: 28px;
+  --space-sheet-x: 22px;
+  --space-sheet-bottom: 40px;
+  --space-page-end: 22px;
   --offset-gutter: -40px;
-  --offset-target-bar: -18px;
+  --offset-target-bar: -12px;
 
   /* Radii */
   --radius-xs: 4px;
@@ -98,10 +98,49 @@
   /* Sizes */
   --size-target: 44px; /* 44px: the mockup's buttons are about 31-40px tall */
   --size-sidebar: 232px;
-  --size-panel: 384px;
+  --size-panel: 320px;
   --size-sheet: 820px;
+
+  /* The sticky bar under 1024px: its 44px buttons plus padding. */
+  --size-app-bar: 60px;
 
   /* Grain: a noise tile that takes the shine off the navy, like a riso print */
   --noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  .7 0 0 0 -.33'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   --surface-navy: var(--noise), linear-gradient(160deg, var(--color-navy) 40%, var(--color-navy-light) 160%);
+}
+
+/*
+ * Mobile-first: the values above are for the smallest screens, and these step up.
+ * CSS can't use a variable in a media query, so 640px and 1024px are written out
+ * in each component's module too.
+ */
+@media (min-width: 640px) {
+  :root {
+    --text-body: 18px;
+    --text-counter: 96px;
+    --space-workspace-x: 28px;
+    --space-sheet-top: 48px;
+    --space-sheet-x: 56px;
+    --space-sheet-bottom: 72px;
+    --offset-target-bar: -18px;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --space-workspace-gap: 24px;
+    --space-workspace-x: 16px;
+    --space-sheet-x: 44px;
+    --space-page-end: 120px;
+  }
+}
+
+@media (min-width: 1280px) {
+  :root {
+    --space-workspace-gap: 40px;
+    --space-workspace-x: 28px;
+    --space-sheet-top: clamp(28px, 5vw, 64px);
+    --space-sheet-x: clamp(24px, 6vw, 84px);
+    --size-panel: 384px;
+  }
 }

@@ -6,7 +6,7 @@ import { APPLY_META, applyMarkdown, mapPlace } from '../lib/applySuggestion'
 import { deriveCardView } from '../lib/cardView'
 import { applyDecisions, keepAll } from '../lib/diff'
 import type { ChangeDecision } from '../lib/diff'
-import { normalizeMarkdown, placeFromHeading, placeFromSelection } from '../lib/editorDocument'
+import { normalizeMarkdown, placeFromHeading, placeFromSelection, showPlaceIfStacked } from '../lib/editorDocument'
 import type { SuggestionPlace } from '../lib/editorDocument'
 import { buildRequest, currentIteration, makeIteration, sessionReducer } from '../lib/suggestionSession'
 import type { Ask } from '../lib/suggestionSession'
@@ -135,7 +135,8 @@ export function useSuggestion(editor: Editor, showNotice: (message: string, undo
   // and Ctrl+Z would no longer reach the editor.
   const returnToDocument = useCallback(() => {
     editor.commands.focus(undefined, { scrollIntoView: false })
-  }, [editor])
+    if (place) showPlaceIfStacked(editor, place.from)
+  }, [editor, place])
 
   const cancel = useCallback(() => {
     if (iteration) {

@@ -18,7 +18,12 @@ export function EditorPane({ editor, fileName, showHint }: EditorPaneProps) {
       {showHint && (
         <p className={styles.hint}>
           <span className={styles.hintDot} aria-hidden="true" />
-          Select any sentence to ask for a rewrite, or press <kbd className={styles.key}>/</kbd>
+          <span>
+            Select any sentence to ask for a rewrite
+            <span className={styles.keyHint}>
+              , or press <kbd className={styles.key}>/</kbd>
+            </span>
+          </span>
         </p>
       )}
       <article className={styles.sheet}>

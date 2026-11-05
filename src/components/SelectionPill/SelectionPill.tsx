@@ -1,4 +1,4 @@
-import type { FormEvent, MouseEvent } from 'react'
+import type { CSSProperties, FormEvent, MouseEvent } from 'react'
 import type { Command } from '../../constants'
 import type { PillPosition, PillView } from '../../hooks/useSelectionPill'
 import styles from './SelectionPill.module.css'
@@ -40,8 +40,8 @@ export function SelectionPill({
 
   return (
     <div
-      className={styles.pill}
-      style={{ left: position.left, top: position.top }}
+      className={position.below ? `${styles.pill} ${styles.below}` : styles.pill}
+      style={{ '--pill-left': `${position.left}px`, '--pill-top': `${position.top}px` } as CSSProperties}
       role="toolbar"
       aria-label={`Ask ${appName}`}
     >

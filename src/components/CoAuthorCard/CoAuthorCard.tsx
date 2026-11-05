@@ -1,3 +1,4 @@
+import type { RefObject } from 'react'
 import type { Command, ShortcutRow, TryPrompt } from '../../constants'
 import type { CardView, ReviewView } from '../../lib/cardView'
 import type { ChangeDecision } from '../../lib/diff'
@@ -34,6 +35,7 @@ interface CoAuthorCardProps {
   tryPrompts: TryPrompt[]
   onTry: (prompt: TryPrompt) => void
   shortcuts: ShortcutRow[]
+  panelRef: RefObject<HTMLElement | null>
 }
 
 function pad(count: number): string {
@@ -68,7 +70,7 @@ function Review({
   refineCommands,
   refineText,
   onSubmitRefineText,
-}: Omit<CoAuthorCardProps, 'view' | 'tryPrompts' | 'onTry' | 'shortcuts'> & { view: ReviewView }) {
+}: Omit<CoAuthorCardProps, 'view' | 'tryPrompts' | 'onTry' | 'shortcuts' | 'panelRef'> & { view: ReviewView }) {
   const changes = changesOf(view.diff)
   const total = changes.length
   const decided = changes.filter((change) => view.decisions.has(change.id)).length
@@ -181,9 +183,10 @@ export function CoAuthorCard({
   tryPrompts,
   onTry,
   shortcuts,
+  panelRef,
 }: CoAuthorCardProps) {
   return (
-    <aside className={styles.panel} aria-label="Co-author">
+    <aside ref={panelRef} className={styles.panel} aria-label="Co-author">
       <div className={styles.card} aria-live="polite">
         {view.kind === 'idle' && <EmptyState prompts={tryPrompts} onTry={onTry} />}
 
