@@ -21,7 +21,7 @@
   /* Color: text on the navy surfaces */
   --color-on-dark: #ffffff;
   --color-on-dark-soft: rgb(255 255 255 / 0.82);
-  --color-on-dark-muted: rgb(255 255 255 / 0.7); /* AA: 5.61:1 at the lightest navy */
+  --color-on-dark-muted: rgb(255 255 255 / 0.7); /* AA: 6.99:1 at the card's lightest corner */
   --color-on-dark-placeholder: rgb(255 255 255 / 0.6);
   --color-on-dark-border: rgb(255 255 255 / 0.25);
   --color-on-dark-hairline: rgb(255 255 255 / 0.1);
@@ -29,14 +29,14 @@
   --color-on-dark-hover: rgb(255 255 255 / 0.12);
 
   /* Color: diff on the navy card */
-  --color-diff-removed: rgb(255 255 255 / 0.7); /* AA: the mockup's #8e8a7c is 2.73:1 here */
+  --color-diff-removed: rgb(255 255 255 / 0.7); /* AA: 5.22:1 on a selected change at the card's lightest corner; the mockup's #8e8a7c is 3.62:1 there without it */
   --color-diff-added: #ffffff;
   --color-diff-added-fill: rgb(154 179 235 / 0.22);
   --color-diff-added-line: var(--color-sky);
   --color-diff-focus: #ffffff;
 
   /* Color: palette and overlays */
-  --color-palette-idle: rgb(255 255 255 / 0.42); /* AA: the mockup's 0.28 is 2.50:1 */
+  --color-palette-idle: rgb(255 255 255 / 0.42); /* AA for large text: 3.30:1 at its lightest; the mockup's 0.28 is 2.28:1 */
   --color-palette-backdrop-start: rgb(15 34 58 / 0.97);
   --color-palette-backdrop-end: rgb(47 70 111 / 0.97);
   --color-scrim: rgb(24 26 77 / 0.35);
