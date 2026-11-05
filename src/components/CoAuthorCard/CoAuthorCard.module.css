@@ -180,17 +180,31 @@
   font-weight: 500;
 }
 
-.status {
+.statusRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
   margin-top: var(--space-4);
+}
+
+.status {
+  flex: 1;
   color: var(--color-on-dark-soft);
   font-size: var(--text-md);
 }
 
 .refineError {
-  margin-top: var(--space-4);
+  flex: 1;
   color: var(--color-on-dark);
   font-size: var(--text-md);
   line-height: 1.5;
+}
+
+.errorTitle {
+  margin-top: var(--space-5);
+  font-size: var(--text-card-title);
+  font-weight: 600;
+  letter-spacing: -0.02em;
 }
 
 .tip {

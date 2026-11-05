@@ -87,11 +87,11 @@ Test names are the names the tests will have. Update the status when a row is pr
 | S23 | JSON is validated without zod | `server/parseModelOutput.ts`, `parseSuggestRequest` in `server/app.ts`; decision 13 | done |
 | S24 | `/` with nothing selected acts on the current section and names it | `src/lib/sections.ts`; tests "the current section is the blocks under the cursor's heading", "a title with no text of its own has no target", "the palette names its target" | planned |
 | S25 | First-open state: empty co-author card, "Try one" prompts and the hint | `src/components/EmptyState/`, hint in `src/components/EditorPane/`; test "Try one is hidden when its section is gone"; manual walkthrough of a new user | done |
-| S26 | Loading state with Cancel, using AbortController | `src/api/suggestClient.ts`; test "cancel aborts the request and leaves the document unchanged" | planned |
-| S27 | Clear error: missing key | `server/app.test.ts`: "a missing key is reported without calling the model"; card shows the message | planned |
-| S28 | Clear error: budget exhausted | test "an exhausted budget is reported as budget_exhausted" | planned |
-| S29 | Clear error: network | tests "a network failure becomes a readable error", "the client reports an unreachable server" | planned |
-| S30 | Retry button after an error | test "retry sends the same request as one new call" | planned |
+| S26 | Loading state with Cancel, using AbortController | `src/api/suggestClient.test.ts`: "cancel aborts the request"; the document staying unchanged was checked in a browser run | done |
+| S27 | Clear error: missing key | `server/app.test.ts`: "a missing key is reported without calling the model"; `src/lib/cardView.test.ts`: "each failure has its own heading" | done |
+| S28 | Clear error: budget exhausted | `server/app.test.ts`: "an exhausted budget is reported as budget_exhausted" | done |
+| S29 | Clear error: network | tests "a network failure becomes a readable error", "the client reports an unreachable server" | done |
+| S30 | Retry button after an error | `src/lib/cardView.test.ts`: "retry sends the same request as one new call"; the single new call was counted in a browser run | done |
 | S31 | Keyboard shortcuts | `src/hooks/useShortcuts.ts`; test "typing a slash in a sentence stays text" | planned |
 | S32 | `/` palette | `src/components/CommandPalette/`; test "the palette moves with the arrows and runs on Enter" | planned |
 | S33 | Per-change row: "Change 2 of 6 ‹ › Keep Discard", plus Accept all and Reject all | `src/components/DiffView/`; test "the arrows reach every change, in both directions" | done |

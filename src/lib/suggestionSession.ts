@@ -1,3 +1,4 @@
+import type { SuggestRequest } from '../../shared/contract'
 import { changesOf, computeDiff } from './diff'
 import type { ChangeDecision, SuggestionDiff } from './diff'
 import type { SuggestionPlace } from './editorDocument'
@@ -10,17 +11,39 @@ export interface Iteration {
   diff: SuggestionDiff
 }
 
+/** What was last asked for, so a retry can repeat exactly that. */
+export interface Ask {
+  label: string
+  instruction: string
+  /** The rewrite being refined, or null on the first request. */
+  currentSuggestion: string | null
+}
+
 /** One suggestion under review, from the first ask until it's settled. */
 export interface Session {
   place: SuggestionPlace
-  /** The action in flight or last asked for. */
-  label: string
+  ask: Ask
   iterations: Iteration[]
   current: number
   /** Keep and discard marks for the current iteration. */
   decisions: ReadonlyMap<number, ChangeDecision>
   /** The change the row below the diff acts on. */
   activeChange: number
+}
+
+export function currentIteration(session: Session): Iteration | undefined {
+  return session.iterations[session.current]
+}
+
+/** The request for an ask. The selection is always the original text. */
+export function buildRequest(place: SuggestionPlace, ask: Ask): SuggestRequest {
+  return {
+    selection: place.markdown,
+    target: place.kind,
+    instruction: ask.instruction,
+    currentSuggestion: ask.currentSuggestion,
+    context: place.context,
+  }
 }
 
 /**
@@ -32,8 +55,8 @@ export function makeIteration(original: string, label: string, rewrite: string, 
 }
 
 export type SessionAction =
-  | { type: 'begin'; place: SuggestionPlace; label: string }
-  | { type: 'refine'; label: string }
+  | { type: 'begin'; place: SuggestionPlace; ask: Ask }
+  | { type: 'refine'; ask: Ask }
   | { type: 'addIteration'; iteration: Iteration }
   | { type: 'selectIteration'; index: number }
   | { type: 'selectChange'; id: number }
@@ -41,10 +64,6 @@ export type SessionAction =
   | { type: 'decide'; id: number; decision: ChangeDecision }
   | { type: 'movePlace'; place: SuggestionPlace }
   | { type: 'end' }
-
-export function currentIteration(session: Session): Iteration | undefined {
-  return session.iterations[session.current]
-}
 
 function changeIds(session: Session): number[] {
   const iteration = currentIteration(session)
@@ -66,7 +85,7 @@ export function sessionReducer(session: Session | null, action: SessionAction): 
   if (action.type === 'begin') {
     return {
       place: action.place,
-      label: action.label,
+      ask: action.ask,
       iterations: [],
       current: 0,
       decisions: new Map(),
@@ -77,7 +96,7 @@ export function sessionReducer(session: Session | null, action: SessionAction): 
 
   switch (action.type) {
     case 'refine':
-      return { ...session, label: action.label }
+      return { ...session, ask: action.ask }
     case 'selectIteration':
       if (!session.iterations[action.index] || action.index === session.current) return session
       return { ...session, current: action.index, decisions: new Map(), activeChange: 0 }

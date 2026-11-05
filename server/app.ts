@@ -22,6 +22,7 @@ export interface AppOptions {
 const HTTP_STATUS = {
   bad_request: 400,
   missing_api_key: 500,
+  budget_exhausted: 402,
   upstream_error: 502,
   invalid_model_output: 502,
 } as const satisfies Record<SuggestErrorCode, number>

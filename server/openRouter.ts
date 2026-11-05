@@ -79,6 +79,15 @@ export async function callModel(
     }
   }
 
+  if (await isBudgetFailure(response)) {
+    return {
+      ok: false,
+      code: 'budget_exhausted',
+      message: 'The credit on this API key has run out. Your document is unchanged.',
+      detail: `OpenRouter returned ${response.status}: no credit left`,
+    }
+  }
+
   if (!response.ok) {
     return {
       ok: false,
@@ -110,6 +119,17 @@ export async function callModel(
   }
 }
 
+/**
+ * OpenRouter reports no credit as a 402, and a key over its own spending cap as
+ * a 403 mentioning the limit. The body is only inspected, never passed on.
+ */
+async function isBudgetFailure(response: Response): Promise<boolean> {
+  if (response.status === 402) return true
+  if (response.status !== 403) return false
+  const body = await response.clone().text().catch(() => '')
+  return /limit|credit/i.test(body)
+}
+
 function invalidOutput(detail: string): ModelResult {
   return {
     ok: false,
@@ -123,7 +143,6 @@ function messageForStatus(status: number): string {
   if (status === 401 || status === 403) {
     return 'The OpenRouter API key was rejected. Check the key in your .env file.'
   }
-  if (status === 402) return 'The OpenRouter account is out of credit.'
   if (status === 429) return 'The model is rate limited right now. Wait a moment and try again.'
   return 'The model service had a problem. Try again.'
 }

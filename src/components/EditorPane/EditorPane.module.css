@@ -113,6 +113,23 @@
   text-decoration: underline;
 }
 
+/* While the model works, a slow sweep over the text it was given. */
+.sheet :global(.tiptap .blaze-thinking) {
+  border-radius: var(--radius-xs);
+  background: linear-gradient(90deg, transparent, var(--color-target-fill), transparent);
+  background-size: 200% 100%;
+  animation: thinking 1.4s linear infinite;
+}
+
+@keyframes thinking {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
 /* What the current suggestion is about. */
 .sheet :global(.tiptap .blaze-target) {
   background: var(--color-target-fill);

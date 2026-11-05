@@ -1,7 +1,6 @@
 import type { Editor } from '@tiptap/core'
 import type { Transaction } from '@tiptap/pm/state'
 import { useCallback, useEffect, useReducer, useState } from 'react'
-import type { SuggestRequest } from '../../shared/contract'
 import type { Command } from '../constants'
 import { APPLY_META, applyMarkdown, mapPlace } from '../lib/applySuggestion'
 import { deriveCardView } from '../lib/cardView'
@@ -9,19 +8,10 @@ import { applyDecisions, keepAll } from '../lib/diff'
 import type { ChangeDecision } from '../lib/diff'
 import { normalizeMarkdown, placeFromHeading, placeFromSelection } from '../lib/editorDocument'
 import type { SuggestionPlace } from '../lib/editorDocument'
-import { currentIteration, makeIteration, sessionReducer } from '../lib/suggestionSession'
+import { buildRequest, currentIteration, makeIteration, sessionReducer } from '../lib/suggestionSession'
+import type { Ask } from '../lib/suggestionSession'
 import { setTargetHighlight } from '../lib/targetHighlight'
 import { useAiRequest } from './useAiRequest'
-
-function buildRequest(place: SuggestionPlace, instruction: string, currentSuggestion: string | null): SuggestRequest {
-  return {
-    selection: place.markdown,
-    target: place.kind,
-    instruction,
-    currentSuggestion,
-    context: place.context,
-  }
-}
 
 /** Free text from an Ask field is the instruction, and its own short label. */
 export function askCommand(text: string): Command {
@@ -45,12 +35,19 @@ export function useSuggestion(editor: Editor, showNotice: (message: string, undo
     reset()
     dispatch({ type: 'end' })
     setRefineText('')
-    setTargetHighlight(editor, null)
-  }, [editor, reset])
+  }, [reset])
+
+  const place = session?.place
+  const loading = ai.state.status === 'loading'
+
+  // Draws the target, sweeping while the model works. Decorations aren't part
+  // of the document, so this never changes it.
+  useEffect(() => {
+    setTargetHighlight(editor, place ?? null, loading)
+  }, [editor, place, loading])
 
   // Follows the place through edits elsewhere, and drops the suggestion if its
   // own paragraph changed. Transactions catch paste and undo, not just typing.
-  const place = session?.place
   useEffect(() => {
     if (!place) return
     const onTransaction = ({ transaction }: { transaction: Transaction }) => {
@@ -69,14 +66,14 @@ export function useSuggestion(editor: Editor, showNotice: (message: string, undo
     }
   }, [editor, endSession, place, showNotice])
 
-  const request = useCallback(
-    async (target: SuggestionPlace, command: Command, currentSuggestion: string | null) => {
-      const suggestion = await run(buildRequest(target, command.instruction, currentSuggestion))
+  const send = useCallback(
+    async (target: SuggestionPlace, ask: Ask) => {
+      const suggestion = await run(buildRequest(target, ask))
       if (!suggestion) return
       const rewrite = normalizeMarkdown(editor, suggestion.rewrite)
       dispatch({
         type: 'addIteration',
-        iteration: makeIteration(target.markdown, command.label, rewrite, suggestion.rationale),
+        iteration: makeIteration(target.markdown, ask.label, rewrite, suggestion.rationale),
       })
       setRefineText('')
     },
@@ -85,18 +82,23 @@ export function useSuggestion(editor: Editor, showNotice: (message: string, undo
 
   const askAbout = useCallback(
     (target: SuggestionPlace, command: Command) => {
+      const ask: Ask = { label: command.label, instruction: command.instruction, currentSuggestion: null }
       setHasAsked(true)
-      dispatch({ type: 'begin', place: target, label: command.label })
-      setTargetHighlight(editor, target)
-      void request(target, command, null)
+      dispatch({ type: 'begin', place: target, ask })
+      void send(target, ask)
     },
-    [editor, request],
+    [send],
   )
 
   const askAboutSelection = useCallback(
     (command: Command) => {
       const target = placeFromSelection(editor)
-      if (target) askAbout(target, command)
+      if (!target) return
+      // The highlight takes over from the selection. If the selection stayed,
+      // choosing the same words again wouldn't count as a change and the pill
+      // wouldn't come back after a cancel or reject.
+      editor.commands.setTextSelection(target.to)
+      askAbout(target, command)
     },
     [askAbout, editor],
   )
@@ -114,17 +116,38 @@ export function useSuggestion(editor: Editor, showNotice: (message: string, undo
   const refine = useCallback(
     (command: Command) => {
       if (!session || !iteration) return
-      dispatch({ type: 'refine', label: command.label })
-      void request(session.place, command, iteration.rewrite)
+      const ask: Ask = {
+        label: command.label,
+        instruction: command.instruction,
+        currentSuggestion: iteration.rewrite,
+      }
+      dispatch({ type: 'refine', ask })
+      void send(session.place, ask)
     },
-    [iteration, request, session],
+    [iteration, send, session],
   )
+
+  /** One click, one new call. Nothing retries on its own. */
+  const retry = useCallback(() => {
+    if (session) void send(session.place, session.ask)
+  }, [send, session])
 
   // The button just pressed disappears with the review, so focus would be lost
   // and Ctrl+Z would no longer reach the editor.
   const returnToDocument = useCallback(() => {
     editor.commands.focus(undefined, { scrollIntoView: false })
   }, [editor])
+
+  const cancel = useCallback(() => {
+    if (iteration) {
+      // Cancelling a refine keeps the answer already on screen.
+      reset()
+      return
+    }
+    endSession()
+    returnToDocument()
+    showNotice('Cancelled. Your text is unchanged.')
+  }, [endSession, iteration, reset, returnToDocument, showNotice])
 
   const settle = useCallback(
     (decisions: ReadonlyMap<number, ChangeDecision>) => {
@@ -182,6 +205,8 @@ export function useSuggestion(editor: Editor, showNotice: (message: string, undo
       applyDecided,
       rejectAll,
       close,
+      cancel,
+      retry,
       decide,
       selectChange,
       stepChange,

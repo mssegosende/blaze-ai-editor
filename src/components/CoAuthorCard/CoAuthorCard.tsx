@@ -13,6 +13,8 @@ export interface ReviewActions {
   applyDecided: () => void
   rejectAll: () => void
   close: () => void
+  cancel: () => void
+  retry: () => void
   decide: (id: number, decision: ChangeDecision) => void
   selectChange: (id: number) => void
   stepChange: (delta: 1 | -1) => void
@@ -142,11 +144,23 @@ function Review({
         onCommand={actions.refine}
         onSubmitText={onSubmitRefineText}
       />
-      {view.refining !== null && <p className={styles.status}>Refining: {view.refining}…</p>}
+      {view.refining !== null && (
+        <div className={styles.statusRow}>
+          <p className={styles.status}>Refining: {view.refining}…</p>
+          <button className={styles.ghost} type="button" onClick={actions.cancel}>
+            Cancel
+          </button>
+        </div>
+      )}
       {view.refineError !== null && (
-        <p className={styles.refineError} role="alert">
-          {view.refineError} Your current suggestion is still here.
-        </p>
+        <div className={styles.statusRow}>
+          <p className={styles.refineError} role="alert">
+            {view.refineError} Your current suggestion is still here.
+          </p>
+          <button className={styles.ghost} type="button" onClick={actions.retry}>
+            Retry
+          </button>
+        </div>
       )}
     </>
   )
@@ -172,16 +186,29 @@ export function CoAuthorCard({
             <h2 className={styles.label}>03 · {view.title}</h2>
             <p className={styles.thinking}>Thinking…</p>
             <p className={styles.body}>{view.label} — only this text, nothing else in the document.</p>
+            <div className={styles.actionsSingle}>
+              <button className={styles.ghost} type="button" onClick={actions.cancel}>
+                Cancel
+              </button>
+            </div>
           </>
         )}
 
         {view.kind === 'error' && (
           <>
             <h2 className={styles.label}>03 · {view.title}</h2>
-            <p className={styles.title}>That didn't work</p>
+            <p className={styles.errorTitle}>{view.heading}</p>
             <p className={styles.body} role="alert">
               {view.message}
             </p>
+            <div className={styles.actions}>
+              <button className={styles.primary} type="button" onClick={actions.retry}>
+                Retry
+              </button>
+              <button className={styles.ghost} type="button" onClick={actions.close}>
+                Close
+              </button>
+            </div>
           </>
         )}
 

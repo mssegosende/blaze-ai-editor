@@ -23,7 +23,7 @@ function iteration(rewrite: string): Iteration {
 const threeChanges = iteration('one A two B three C four')
 
 function reviewing(): Session {
-  const begun = sessionReducer(null, { type: 'begin', place, label: 'Shorter' })
+  const begun = sessionReducer(null, { type: 'begin', place, ask: { label: 'Shorter', instruction: 'Make it shorter.', currentSuggestion: null } })
   const session = sessionReducer(begun, { type: 'addIteration', iteration: threeChanges })
   if (!session) throw new Error('No session')
   return session
@@ -95,8 +95,8 @@ describe('sessionReducer', () => {
   })
 
   it('a refine in flight leaves the answers alone', () => {
-    const session = sessionReducer(reviewing(), { type: 'refine', label: 'Warmer' })
-    expect(session?.label).toBe('Warmer')
+    const session = sessionReducer(reviewing(), { type: 'refine', ask: { label: 'Warmer', instruction: 'Make it warmer.', currentSuggestion: 'x' } })
+    expect(session?.ask.label).toBe('Warmer')
     expect(session?.iterations).toHaveLength(1)
     expect(session?.current).toBe(0)
   })

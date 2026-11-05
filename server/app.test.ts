@@ -87,6 +87,30 @@ describe('POST /api/suggest', () => {
     expect(await errorCode(response)).toBe('upstream_error')
   })
 
+  it.each([
+    ['no credit (402)', new Response('{"error":{"message":"Insufficient credits"}}', { status: 402 })],
+    ['a key over its cap (403)', new Response('{"error":{"message":"Key limit exceeded"}}', { status: 403 })],
+  ])('an exhausted budget is reported as budget_exhausted: %s', async (_label, upstream) => {
+    const fetchFn = vi.fn<typeof fetch>(async () => upstream)
+    const response = await post(createApp({ apiKey: API_KEY, model: 'm', fetchFn }), validBody)
+
+    expect(fetchFn).toHaveBeenCalledTimes(1)
+    expect(response.status).toBe(402)
+    expect(await errorCode(response)).toBe('budget_exhausted')
+  })
+
+  it('any other 403 is not reported as an exhausted budget', async () => {
+    const fetchFn = vi.fn<typeof fetch>(async () => new Response('flagged by moderation', { status: 403 }))
+    const response = await post(createApp({ apiKey: API_KEY, model: 'm', fetchFn }), validBody)
+    expect(await errorCode(response)).toBe('upstream_error')
+  })
+
+  it('upstream error text is never passed to the browser', async () => {
+    const fetchFn = vi.fn<typeof fetch>(async () => new Response('secret upstream detail', { status: 500 }))
+    const response = await post(createApp({ apiKey: API_KEY, model: 'm', fetchFn }), validBody)
+    expect(await response.text()).not.toContain('secret upstream detail')
+  })
+
   it('a missing key is reported without calling the model', async () => {
     const fetchFn = vi.fn<typeof fetch>()
     const response = await post(createApp({ apiKey: '', model: 'm', fetchFn }), validBody)

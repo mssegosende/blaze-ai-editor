@@ -36,16 +36,17 @@ export const TargetHighlight = Extension.create({
   },
 })
 
-export function setTargetHighlight(editor: Editor, range: HighlightRange | null): void {
+export function setTargetHighlight(editor: Editor, range: HighlightRange | null, thinking = false): void {
   const { doc, tr } = editor.state
   const decorations: Decoration[] = []
 
   if (range) {
     decorations.push(Decoration.inline(range.from, range.to, { class: 'blaze-target' }))
+    const blockClass = thinking ? 'blaze-target-block blaze-thinking' : 'blaze-target-block'
     doc.forEach((node, offset) => {
       const end = offset + node.nodeSize
       if (offset < range.to && end > range.from) {
-        decorations.push(Decoration.node(offset, end, { class: 'blaze-target-block' }))
+        decorations.push(Decoration.node(offset, end, { class: blockClass }))
       }
     })
   }

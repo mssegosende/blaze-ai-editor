@@ -1,3 +1,4 @@
+import type { ClientErrorCode } from '../api/suggestClient'
 import type { AiRequestState } from '../hooks/useAiRequest'
 import type { ChangeDecision, SuggestionDiff } from './diff'
 import { currentIteration } from './suggestionSession'
@@ -23,8 +24,18 @@ export interface ReviewView {
 export type CardView =
   | { kind: 'idle' }
   | { kind: 'loading'; title: string; label: string }
-  | { kind: 'error'; title: string; message: string }
+  | { kind: 'error'; title: string; heading: string; message: string }
   | ReviewView
+
+const ERROR_HEADINGS: Partial<Record<ClientErrorCode, string>> = {
+  missing_api_key: 'Add your API key',
+  budget_exhausted: 'Out of credit',
+  network: "Can't reach the server",
+}
+
+export function errorHeading(code: ClientErrorCode): string {
+  return ERROR_HEADINGS[code] ?? "That didn't work"
+}
 
 /** What the card shows, from the session and the request. Pure. */
 export function deriveCardView(session: Session | null, request: AiRequestState): CardView {
@@ -33,8 +44,10 @@ export function deriveCardView(session: Session | null, request: AiRequestState)
   const iteration = currentIteration(session)
 
   if (!iteration) {
-    if (request.status === 'error') return { kind: 'error', title, message: request.message }
-    return { kind: 'loading', title, label: session.label }
+    if (request.status === 'error') {
+      return { kind: 'error', title, heading: errorHeading(request.code), message: request.message }
+    }
+    return { kind: 'loading', title, label: session.ask.label }
   }
 
   return {
@@ -47,7 +60,7 @@ export function deriveCardView(session: Session | null, request: AiRequestState)
     activeChange: session.activeChange,
     history: session.iterations.map((item) => item.label),
     current: session.current,
-    refining: request.status === 'loading' ? session.label : null,
+    refining: request.status === 'loading' ? session.ask.label : null,
     refineError: request.status === 'error' ? request.message : null,
   }
 }

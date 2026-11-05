@@ -40,6 +40,7 @@ export interface Suggestion {
 export type SuggestErrorCode =
   | 'bad_request'
   | 'missing_api_key'
+  | 'budget_exhausted'
   | 'upstream_error'
   | 'invalid_model_output'
 
