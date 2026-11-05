@@ -221,6 +221,26 @@ More **detail** here, see [the docs](https://example.com/b).`
     expect(output.indexOf('- Second item')).toBeLessThan(output.indexOf('### Details'))
   })
 
+  it('accepting a restructured block from its diff is one undo and leaves nothing twice', () => {
+    const editor = editorWith('## Head\n\n- First item\n- Second item\n- Third item\n\n## Next\n\nAfter.')
+    const before = editor.getJSON()
+    const changes = countDocChanges(editor)
+    const place = section(editor, 'First item')
+    const rewrite = normalizeMarkdown(editor, '- Third item\n- First item\n- Second item')
+
+    const diff = computeDiff(place.markdown, rewrite, place.kind)
+    expect(diff).toMatchObject({ mode: 'block', changeCount: 1, restructured: true })
+
+    applyMarkdown(editor, place, applyDecisions(diff, keepAll(diff)))
+    expect(changes()).toBe(1)
+    const output = editor.getMarkdown()
+    expect(output).toContain('## Head\n\n- Third item\n- First item\n- Second item')
+    expect(output.split('Third item')).toHaveLength(2)
+
+    editor.commands.undo()
+    expect(editor.getJSON()).toEqual(before)
+  })
+
   it('merging paragraphs and splitting list items both land correctly', () => {
     const editor = editorWith('## Head\n\nOne paragraph.\n\nTwo paragraph.\n\n- Combined item\n\n## Next\n\nAfter.')
     applyMarkdown(editor, section(editor, 'One paragraph'), 'One and two paragraph together.\n\n- Combined\n- Item')

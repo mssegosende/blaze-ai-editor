@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { applyDecisions, changesOf, computeDiff, keepAll } from './diff'
+import { applyDecisions, changesOf, computeDiff, isRestructured, keepAll } from './diff'
 import type { ChangeDecision, SuggestionDiff } from './diff'
 
 const WHY_NOW =
@@ -169,6 +169,82 @@ describe('computeDiff', () => {
   it('an identical rewrite has no changes', () => {
     const diff = computeDiff('Nothing to do **here**.', 'Nothing to do **here**.')
     expect(diff).toMatchObject({ mode: 'inline', changeCount: 0, changedRatio: 0 })
+  })
+
+  describe('restructured sections', () => {
+    const BULLETS = [
+      '- An AI assistant that drafts answers for the most common tickets, which an agent always reviews before sending.',
+      '- A shared knowledge base so the assistant and the team are working from the same information.',
+      '- Weekly reviews of what the assistant got wrong so we can actually improve it over time.',
+    ]
+    const ORIGINAL = BULLETS.join('\n')
+    // A real reply from the model. Before this rule it showed as 4 separate changes.
+    const MOVED_AND_MERGED = [
+      '- Weekly reviews of what the assistant got wrong so we can actually improve it over time.',
+      '- An AI assistant that drafts answers for the most common tickets, which an agent always reviews before sending, working from a shared knowledge base so the assistant and the team use the same information.',
+    ].join('\n')
+    const REORDERED = [BULLETS[2], BULLETS[0], BULLETS[1]].join('\n')
+
+    it.each<[string, string, string]>([
+      ['reordering list items', ORIGINAL, REORDERED],
+      ['moving and merging list items', ORIGINAL, MOVED_AND_MERGED],
+      ['merging two paragraphs', 'First point here.\n\nSecond point here.', 'First point here and second point here.'],
+      ['splitting a paragraph', 'First point here and second point here.', 'First point here.\n\nSecond point here.'],
+      ['splitting a list item', '- Alpha and beta together', '- Alpha\n- Beta'],
+      ['removing a list item', ORIGINAL, [BULLETS[0], BULLETS[1]].join('\n')],
+      [
+        'moving a subsection',
+        '### One\n\nText about one.\n\n### Two\n\nText about two.',
+        '### Two\n\nText about two.\n\n### One\n\nText about one.',
+      ],
+    ])('a restructured section is a single before/after block: %s', (_label, original, rewrite) => {
+      const diff = computeDiff(original, rewrite, 'section')
+      expect(diff).toMatchObject({ mode: 'block', changeCount: 1, restructured: true })
+      expect(changesOf(diff)[0]).toMatchObject({ removed: original, added: rewrite })
+    })
+
+    it('a reorder under 60% changed is still a block', () => {
+      const diff = computeDiff(ORIGINAL, REORDERED, 'section')
+      expect(diff.changedRatio).toBeLessThanOrEqual(0.6)
+      expect(diff.mode).toBe('block')
+    })
+
+    it('a restructured section is all or nothing, so moved text can never appear twice', () => {
+      const diff = computeDiff(ORIGINAL, REORDERED, 'section')
+      const results = everyDecisionCombination(diff).map((decisions) => applyDecisions(diff, decisions))
+      expect(results.sort()).toEqual([ORIGINAL, REORDERED].sort())
+      for (const result of results) expect(count(result, 'Weekly reviews')).toBe(1)
+    })
+
+    it('rewording a section in place stays word by word', () => {
+      const reworded = ORIGINAL.replace('most common tickets', 'most frequent tickets').replace(
+        'same information',
+        'same facts',
+      )
+      const diff = computeDiff(ORIGINAL, reworded, 'section')
+      expect(diff).toMatchObject({ mode: 'inline', changeCount: 2, restructured: false })
+    })
+
+    it('shortening a one-paragraph section stays word by word', () => {
+      expect(computeDiff(WHY_NOW, WHY_NOW_SHORTER, 'section')).toMatchObject({ mode: 'inline', restructured: false })
+    })
+
+    it('an unchanged section is not restructured', () => {
+      expect(computeDiff(ORIGINAL, ORIGINAL, 'section')).toMatchObject({ changeCount: 0, restructured: false })
+    })
+
+    it('a selection is never treated as restructured', () => {
+      const diff = computeDiff('First point here. Second point here.', 'First point here.\n\nSecond point here.', 'selection')
+      expect(diff).toMatchObject({ mode: 'inline', restructured: false })
+    })
+
+    it('a selection is the default target', () => {
+      expect(computeDiff(ORIGINAL, REORDERED).restructured).toBe(false)
+    })
+
+    it('a block rewritten beyond recognition does not count as moved', () => {
+      expect(isRestructured('Old words entirely.\n\nSecond block stays here.', 'Fresh phrasing throughout.\n\nSecond block stays here.')).toBe(false)
+    })
   })
 
   it('the sample paragraph reads as a word-by-word diff, not a block', () => {

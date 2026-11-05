@@ -102,6 +102,7 @@ Test names are the names the tests will have. Update the status when a row is pr
 | S38 | A restructured section is accepted in one transaction and keeps headings, lists, bold and links | tests "accepting a restructured section is one transaction", "a restructured section keeps headings, lists, bold and links" | done |
 | S39 | Suggestions work on text the user just typed, not only the sample document | test "suggestions work on text the user just typed" | done |
 | S40 | Described as a deliberately single-step agent, and never denied to be one, in the README, `NOTES.md` and UI | Decision 7; `CLAUDE.md`; manual search before delivery | planned |
+| S41 | Any restructured section is a single before/after block, all or nothing | `src/lib/diff.test.ts`: "a restructured section is a single before/after block", "a reorder under 60% changed is still a block", "a restructured section is all or nothing, so moved text can never appear twice", "rewording a section in place stays word by word"; `src/lib/applySuggestion.test.ts`: "accepting a restructured block from its diff is one undo and leaves nothing twice" | done |
 
 ## Decisions
 
@@ -130,7 +131,7 @@ The model sees where the text started and where it is now, with no chat history 
 
 ### 4. Over 60% changed shows a single before/after block
 
-A word diff of a near-total rewrite is unreadable confetti. Proposed definition: changed non-whitespace characters on both sides, divided by total non-whitespace characters on both sides, must exceed 0.6. Exactly 0.6 stays word by word.
+A word diff of a near-total rewrite is unreadable confetti. The definition: changed non-whitespace characters on both sides, divided by total non-whitespace characters on both sides, must exceed 0.6. Exactly 0.6 stays word by word. A restructured section is a block regardless of this share (decision 15).
 
 - **Expensive:** in a block, one bad change can't be rejected on its own, and a dropped fact is easier to miss. The user either takes it all or loses it all.
 - **Cheap:** a rewrite near the threshold gets the less useful view. Nothing is lost.
@@ -211,11 +212,12 @@ The brief says suggestions apply "to the document or a selection". The whole doc
 
 The brief asks for "restructure sections". When the target is a section, the agent may reorder, merge or split paragraphs and list items. A selection keeps its shape, because the user chose those exact words.
 
-A restructure doesn't always pass 60% changed. In a real run, moving one bullet and merging two others came out as 4 separate changes, not a block. Accepted whole, it landed correctly and one undo restored it.
+**Any restructured section is one before/after block, all or nothing, whatever share of it changed.** A moved block is one removal and one addition, so keeping only the addition would leave the text in the document twice. In a real run, moving one bullet and merging two others came in under 60% changed and showed as 4 separate changes, which is what prompted this rule.
 
-- **Expensive:** a reorder is accepted and a heading, list or link is lost in the conversion back to the document, or undo restores only part of it. Named tests cover both.
-- **Known gap:** a moved block is one removal and one addition, so keeping only the addition leaves the text in the document twice. It is valid Markdown and visible in the diff before applying, but nothing prevents it.
-- **Cheap:** the model restructures when the user only wanted a rewording. The diff shows it plainly, and the user rejects or refines.
+`isRestructured` in `src/lib/diff.ts` compares blocks (paragraphs, list items, headings). A different count means blocks were merged, split or removed. The same count with blocks matching out of order means a reorder. It applies only to section targets. Rewording a section in place stays word by word.
+
+- **Expensive:** a reorder is accepted and a heading, list or link is lost in the conversion back to the document, or undo restores only part of it. Named tests cover both. Detection can also miss a restructure, for example two blocks swapped and reworded beyond recognition, which would then show as word-by-word changes and could still duplicate text.
+- **Cheap:** a false positive. Removing one bullet, or a reword that happens to match another block better, shows as a block, so the user loses word-by-word review of that one suggestion. They can still accept, reject or refine.
 
 ## Model comparison
 

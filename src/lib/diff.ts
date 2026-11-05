@@ -1,4 +1,5 @@
 import { diffWordsWithSpace } from 'diff'
+import type { SuggestTarget } from '../../shared/contract.ts'
 
 /** Above this share of changed text, a word diff stops being readable. */
 export const BLOCK_THRESHOLD = 0.6
@@ -16,6 +17,8 @@ export interface SuggestionDiff {
   changeCount: number
   /** Share of non-whitespace characters changed, from 0 to 1. */
   changedRatio: number
+  /** A section whose blocks were reordered, merged or split: all or nothing. */
+  restructured: boolean
 }
 
 export type ChangeDecision = 'keep' | 'discard'
@@ -158,16 +161,76 @@ function mergeAtomicSpans(drafts: Draft[], original: string, rewrite: string): v
   }
 }
 
-/** Compares a passage with the model's rewrite. Pure: no editor, no DOM. */
-export function computeDiff(original: string, rewrite: string): SuggestionDiff {
-  const { drafts, changedRatio } = toDrafts(original, rewrite)
+/** Paragraphs, list items and headings, one entry each. */
+function blocksOf(markdown: string): string[] {
+  return markdown
+    .split(/\n+/)
+    .map((line) => line.trim())
+    .filter((line) => line !== '')
+}
 
-  if (changedRatio > BLOCK_THRESHOLD) {
+function wordsOf(block: string): Set<string> {
+  return new Set(block.toLowerCase().match(/[\p{L}\p{N}']+/gu) ?? [])
+}
+
+function similarity(a: Set<string>, b: Set<string>): number {
+  const shared = [...a].filter((word) => b.has(word)).length
+  const total = new Set([...a, ...b]).size
+  return total === 0 ? 0 : shared / total
+}
+
+/** Below this, a rewritten block counts as new rather than as a moved original. */
+const SAME_BLOCK_SIMILARITY = 0.3
+
+/**
+ * True when blocks were merged, split, removed or reordered. Rewording a block
+ * in place isn't restructuring: it keeps its count and its order.
+ */
+export function isRestructured(original: string, rewrite: string): boolean {
+  const before = blocksOf(original).map(wordsOf)
+  const after = blocksOf(rewrite).map(wordsOf)
+  if (before.length !== after.length) return true
+
+  let previous = -1
+  for (const block of after) {
+    let best = -1
+    let bestScore = SAME_BLOCK_SIMILARITY
+    before.forEach((candidate, index) => {
+      const score = similarity(block, candidate)
+      if (score > bestScore) {
+        best = index
+        bestScore = score
+      }
+    })
+    if (best === -1) continue
+    if (best < previous) return true
+    previous = best
+  }
+  return false
+}
+
+/**
+ * Compares a passage with the model's rewrite. Pure: no editor, no DOM.
+ *
+ * A restructured section is always one block, whatever share of it changed: a
+ * moved block is a removal plus an addition, so keeping only the addition would
+ * leave the text in the document twice.
+ */
+export function computeDiff(
+  original: string,
+  rewrite: string,
+  target: SuggestTarget = 'selection',
+): SuggestionDiff {
+  const { drafts, changedRatio } = toDrafts(original, rewrite)
+  const restructured = target === 'section' && isRestructured(original, rewrite)
+
+  if (restructured || changedRatio > BLOCK_THRESHOLD) {
     return {
       mode: 'block',
       segments: [{ kind: 'change', id: 0, removed: original, added: rewrite }],
       changeCount: 1,
       changedRatio,
+      restructured,
     }
   }
 
@@ -178,7 +241,7 @@ export function computeDiff(original: string, rewrite: string): SuggestionDiff {
   const segments = drafts.map((draft): DiffSegment =>
     draft.kind === 'same' ? draft : { ...draft, id: nextId++ },
   )
-  return { mode: 'inline', segments, changeCount: nextId, changedRatio }
+  return { mode: 'inline', segments, changeCount: nextId, changedRatio, restructured: false }
 }
 
 /** Builds the text to apply. A change with no decision stays as the original. */

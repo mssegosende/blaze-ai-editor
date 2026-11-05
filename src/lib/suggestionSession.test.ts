@@ -87,8 +87,8 @@ describe('sessionReducer', () => {
   })
 
   it("a refine's diff compares the original with the latest rewrite", () => {
-    const first = makeIteration(place.markdown, 'Shorter', 'one A two beta three gamma four', 'Why.')
-    const refined = makeIteration(place.markdown, 'Warmer', 'one A two B three gamma four', 'Why.')
+    const first = makeIteration(place, 'Shorter', 'one A two beta three gamma four', 'Why.')
+    const refined = makeIteration(place, 'Warmer', 'one A two B three gamma four', 'Why.')
     expect(first.diff.changeCount).toBe(1)
     expect(refined.diff.changeCount).toBe(2)
     expect(changesOf(refined.diff)[0]).toMatchObject({ removed: 'alpha', added: 'A' })

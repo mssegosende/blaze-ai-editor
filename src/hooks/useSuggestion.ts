@@ -73,7 +73,7 @@ export function useSuggestion(editor: Editor, showNotice: (message: string, undo
       const rewrite = normalizeMarkdown(editor, suggestion.rewrite)
       dispatch({
         type: 'addIteration',
-        iteration: makeIteration(target.markdown, ask.label, rewrite, suggestion.rationale),
+        iteration: makeIteration(target, ask.label, rewrite, suggestion.rationale),
       })
       setRefineText('')
     },

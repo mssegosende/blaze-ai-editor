@@ -28,7 +28,7 @@ function reviewing(): Session {
   const begun = sessionReducer(null, { type: 'begin', place, ask: SHORTER })
   const session = sessionReducer(begun, {
     type: 'addIteration',
-    iteration: makeIteration(place.markdown, 'Shorter', 'one A two B three', 'Why.'),
+    iteration: makeIteration(place, 'Shorter', 'one A two B three', 'Why.'),
   })
   if (!session) throw new Error('No session')
   return session
@@ -114,7 +114,7 @@ describe('deriveCardView', () => {
   it('the history lists every answer in order', () => {
     const session = sessionReducer(reviewing(), {
       type: 'addIteration',
-      iteration: makeIteration(place.markdown, 'Warmer', 'one C two beta three', 'Why.'),
+      iteration: makeIteration(place, 'Warmer', 'one C two beta three', 'Why.'),
     })
     expect(deriveCardView(session, IDLE)).toMatchObject({ history: ['Shorter', 'Warmer'], current: 1 })
   })

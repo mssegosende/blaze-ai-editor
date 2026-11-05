@@ -180,6 +180,13 @@
   font-weight: 500;
 }
 
+.wholeNote {
+  margin-top: var(--space-4);
+  color: var(--color-on-dark-soft);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
 .statusRow {
   display: flex;
   align-items: center;

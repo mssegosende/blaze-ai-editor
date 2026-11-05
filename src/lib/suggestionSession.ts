@@ -50,8 +50,13 @@ export function buildRequest(place: SuggestionPlace, ask: Ask): SuggestRequest {
  * The diff always runs from the original to this rewrite, never from the
  * previous answer: what the user reviews is what accept would apply.
  */
-export function makeIteration(original: string, label: string, rewrite: string, rationale: string): Iteration {
-  return { label, rewrite, rationale, diff: computeDiff(original, rewrite) }
+export function makeIteration(
+  place: Pick<SuggestionPlace, 'markdown' | 'kind'>,
+  label: string,
+  rewrite: string,
+  rationale: string,
+): Iteration {
+  return { label, rewrite, rationale, diff: computeDiff(place.markdown, rewrite, place.kind) }
 }
 
 export type SessionAction =
