@@ -85,7 +85,7 @@ Test names are the names the tests will have. Update the status when a row is pr
 | S21 | Section context kept only if it measurably helps | `scripts/compareContext.ts`, `docs/context-comparison.json`; "Context comparison" below | done |
 | S22 | The section is sent as read-only context | `server/prompt.test.ts`: "the section goes along as context, separate from the passage"; test "a selection request includes its section as context" | done |
 | S23 | JSON is validated without zod | `server/parseModelOutput.ts`, `parseSuggestRequest` in `server/app.ts`; decision 13 | done |
-| S24 | `/` with nothing selected acts on the current section and names it | `src/lib/sections.ts`; `src/lib/editorDocument.test.ts`: "the current section is the blocks under the cursor's heading", "a title with no text of its own has no target", "the palette names its target: the section holding the cursor" | done |
+| S24 | With nothing selected, the palette acts on a named section, and never shows every command disabled | `src/lib/editorDocument.test.ts`: "with no selection and no cursor placed, it targets the section at the top of the viewport", "a fresh page never has a cursor, so the title at the top means the first section with text", "a cursor the user placed wins over the viewport", "a cursor on the title uses the viewport rule", "a document with no text has no target"; `e2e/entry.spec.ts` | done |
 | S25 | First-open state: empty co-author card, "Try one" prompts and the hint | `src/components/EmptyState/`, hint in `src/components/EditorPane/`; test "Try one is hidden when its section is gone"; manual walkthrough of a new user | done |
 | S26 | Loading state with Cancel, using AbortController | `src/api/suggestClient.test.ts`: "cancel aborts the request"; `e2e/errors.spec.ts`: "Cancel aborts the request and leaves the document unchanged" | done |
 | S27 | Clear error: missing key | `server/app.test.ts`: "a missing key is reported without calling the model"; `src/lib/cardView.test.ts`: "each failure has its own heading" | done |
@@ -107,7 +107,8 @@ Test names are the names the tests will have. Update the status when a row is pr
 | S43 | The browser tests never call the real API | `playwright.config.ts` starts Vite only; the fixture in `e2e/support.ts`; `e2e/safety.spec.ts`: "nothing is allowed to leave the machine", "a suggestion is answered by the stub, with no API host contacted" | done |
 | S44 | After Apply, focus returns to the document and Ctrl+Z works | `e2e/regressions.spec.ts`: "after Apply, focus returns to the document and one Ctrl+Z restores it" | done |
 | S45 | The pill comes back after Cancel on the same words | `e2e/regressions.spec.ts`: "the pill comes back after Cancel, on the very same words" | done |
-| S46 | Esc closes the palette when it has no target | `e2e/regressions.spec.ts`: "Esc closes the palette when it has no target" | done |
+| S46 | Esc closes the palette when it has no target | `e2e/regressions.spec.ts`: "Esc closes the palette when it has no target", now meaning a document with no text | done |
+| S47 | Every entry point produces a suggestion in one click: Commands, `/` and the "Try one" prompts | `e2e/entry.spec.ts`: "every entry point works in one click, with nothing selected" | done |
 
 ## Decisions
 
@@ -206,11 +207,17 @@ Two small shapes cross a trust boundary: the browser's request and the model's r
 
 If the contract grows beyond a few fields, the expensive failure gets more likely, and that is the point to adopt a schema library.
 
-### 14. With nothing selected, `/` acts on the current section
+### 14. With nothing selected, the palette acts on a section it names
 
-The brief says suggestions apply "to the document or a selection". The whole document is ruled out by design, so the document case means the section holding the cursor: the blocks under its heading, up to the next heading of the same or higher level, not including the heading itself. If focus is outside the editor, the last cursor position counts. The palette header names the target ("on 'Why now'") before anything runs. A title with no text of its own, or an empty section, has no target: the palette says to select text or move the cursor.
+The brief says suggestions apply "to the document or a selection". The whole document is ruled out by design, so the document case means one section: the blocks under its heading, up to the next heading of the same or higher level, not including the heading itself.
 
-- **Expensive:** the user thinks they're editing one sentence and the command rewrites a long section, or targets a different section than the cursor seems to be in. Nothing is applied without review, but it would look like a bug and cost trust. The named target in the header is the guard.
+The target is decided in this order: the selection, then the section at a cursor the user placed, then the section nearest the top of the viewport. The editor's starting position doesn't count as a cursor the user placed, and a cursor on a title with no text of its own falls through to the viewport rule. The palette header names the target before anything runs. The list is never shown disabled: if the whole document has no text, it is replaced by "Write something first, then ask" and Close.
+
+This replaced an earlier rule that gave a title no target. The cursor starts on the title, so the first click on Commands showed every command greyed out, and it looked broken in a walkthrough.
+
+`/` in the middle of a sentence still types a slash, so it opens the palette only with text selected, on an empty line, or outside the editor. The Commands button works from anywhere.
+
+- **Expensive:** the user thinks they're editing one sentence and the command rewrites a long section, or targets a different section than they expected after scrolling. Nothing is applied without review, but it would look like a bug and cost trust. The named target in the header is the guard.
 - **Cheap:** the user wanted a smaller scope. They reject it and select the text.
 
 ### 15. Only a section may be restructured

@@ -223,10 +223,13 @@ describe('placeFromHeading', () => {
 })
 
 describe('placeForPalette', () => {
+  const fresh = { cursorPlaced: false, firstVisibleBlock: 0 }
+  const placed = { cursorPlaced: true, firstVisibleBlock: 0 }
+
   it('the palette names its target: the section holding the cursor', () => {
     const editor = editorWith(SAMPLE_DOCUMENT)
     editor.commands.setTextSelection(positionOf(editor, 'harder tickets'))
-    const place = placeForPalette(editor)
+    const place = placeForPalette(editor, placed)
     expect(place?.title).toBe('Why now')
     expect(place?.kind).toBe('section')
   })
@@ -234,7 +237,7 @@ describe('placeForPalette', () => {
   it('a selection comes first, and is what the palette acts on', () => {
     const editor = editorWith(SAMPLE_DOCUMENT)
     selectText(editor, 'harder tickets')
-    const place = placeForPalette(editor)
+    const place = placeForPalette(editor, fresh)
     expect(place?.kind).toBe('selection')
     expect(place?.markdown).toBe('harder tickets')
     expect(place?.title).toBe('Why now')
@@ -244,16 +247,67 @@ describe('placeForPalette', () => {
     const editor = editorWith('## Head\n\nSome text here.\n\n## Next\n\nOther.')
     editor.commands.setTextSelection(positionOf(editor, 'here.') + 5)
     editor.commands.splitBlock()
-    const place = placeForPalette(editor)
+    const place = placeForPalette(editor, placed)
     expect(place?.title).toBe('Head')
     expect(place?.markdown).toContain('Some text here.')
     expect(place?.markdown).not.toContain('Other')
   })
 
-  it('a cursor on the title has no target', () => {
-    const editor = editorWith(RICH)
-    editor.commands.setTextSelection(positionOf(editor, 'Title'))
-    expect(placeForPalette(editor)).toBeNull()
+  it('with no selection and no cursor placed, it targets the section at the top of the viewport', () => {
+    const editor = editorWith(SAMPLE_DOCUMENT)
+    // Blocks: 0 title, 1 Why now, 2 its text, 3 What we're proposing, 4 its list,
+    // 5 How we'll keep it safe, 6 its text, 7 Success metrics, 8 its text.
+    expect(placeForPalette(editor, { cursorPlaced: false, firstVisibleBlock: 6 })?.title).toBe(
+      "How we'll keep it safe",
+    )
+    expect(placeForPalette(editor, { cursorPlaced: false, firstVisibleBlock: 7 })?.title).toBe('Success metrics')
+  })
+
+  it('a fresh page never has a cursor, so the title at the top means the first section with text', () => {
+    const place = placeForPalette(editorWith(SAMPLE_DOCUMENT), fresh)
+    expect(place?.title).toBe('Why now')
+    expect(place?.kind).toBe('section')
+    expect(place?.markdown).toContain('Right now the support team')
+  })
+
+  it('a cursor the user placed wins over the viewport', () => {
+    const editor = editorWith(SAMPLE_DOCUMENT)
+    editor.commands.setTextSelection(positionOf(editor, 'harder tickets'))
+    const place = placeForPalette(editor, { cursorPlaced: true, firstVisibleBlock: 7 })
+    expect(place?.title).toBe('Why now')
+  })
+
+  it("the editor's starting position does not count as a cursor the user placed", () => {
+    const editor = editorWith('First paragraph.\n\nSecond paragraph.\n\nThird paragraph.')
+    const place = placeForPalette(editor, { cursorPlaced: false, firstVisibleBlock: 2 })
+    expect(place?.markdown).toBe('Third paragraph.')
+  })
+
+  it('a cursor on the title uses the viewport rule', () => {
+    const editor = editorWith(SAMPLE_DOCUMENT)
+    editor.commands.setTextSelection(positionOf(editor, 'AI rollout plan'))
+    expect(placeForPalette(editor, { cursorPlaced: true, firstVisibleBlock: 7 })?.title).toBe('Success metrics')
+  })
+
+  it('an empty section at the top of the viewport moves on to the next with text', () => {
+    const editor = editorWith('## Empty\n\n## Filled\n\nText here.')
+    expect(placeForPalette(editor, fresh)?.title).toBe('Filled')
+  })
+
+  it('with nothing below the viewport top, it looks back up', () => {
+    const editor = editorWith('## Filled\n\nText here.\n\n## Empty')
+    expect(placeForPalette(editor, { cursorPlaced: false, firstVisibleBlock: 2 })?.title).toBe('Filled')
+  })
+
+  it('it never hands over the whole document', () => {
+    const editor = editorWith('First paragraph.\n\nSecond paragraph.')
+    expect(placeForPalette(editor, fresh)?.markdown).toBe('First paragraph.')
+  })
+
+  it('a document with no text has no target', () => {
+    const editor = editorWith('')
+    expect(placeForPalette(editor, fresh)).toBeNull()
+    expect(placeForPalette(editorWith('# Only a title'), fresh)).toBeNull()
   })
 })
 

@@ -4,7 +4,7 @@ import styles from './CommandPalette.module.css'
 
 interface CommandPaletteProps {
   appName: string
-  /** What a command would act on, or null if there's nothing to act on. */
+  /** What a command would act on. Null only when the document has no text. */
   targetTitle: string | null
   commands: Command[]
   index: number
@@ -30,8 +30,6 @@ export function CommandPalette({
   onAsk,
   onClose,
 }: CommandPaletteProps) {
-  const available = targetTitle !== null
-
   const onKeyDown = (event: KeyboardEvent) => {
     if (event.key === 'Escape') {
       event.preventDefault()
@@ -40,14 +38,13 @@ export function CommandPalette({
       event.preventDefault()
       onMove(event.key)
     } else if (event.key === 'Tab') {
-      // The field drives the list, so focus stays inside the palette.
+      // Focus stays inside the palette.
       event.preventDefault()
     }
   }
 
   const submit = (event: FormEvent) => {
     event.preventDefault()
-    if (!available) return
     if (askText.trim() !== '') {
       onAsk()
       return
@@ -68,64 +65,70 @@ export function CommandPalette({
       onKeyDown={onKeyDown}
     >
       <div className={styles.box}>
-        <div className={styles.top}>
-          <span>
-            / commands ·{' '}
-            {available ? `on “${targetTitle}”` : 'select text, or put the cursor in a section with text'}
-          </span>
-          <span className={styles.keys}>↑ ↓ to move · ↵ to run · esc to close</span>
-          <button className={styles.close} type="button" tabIndex={-1} onClick={onClose}>
-            Close
-          </button>
-        </div>
+        {targetTitle === null ? (
+          <>
+            <div className={styles.top}>
+              <span>/ commands</span>
+              <button className={styles.close} type="button" onClick={onClose} autoFocus>
+                Close
+              </button>
+            </div>
+            <p className={styles.nothing}>Write something first, then ask</p>
+          </>
+        ) : (
+          <>
+            <div className={styles.top}>
+              <span>/ commands · on “{targetTitle}”</span>
+              <span className={styles.keys}>↑ ↓ to move · ↵ to run · esc to close</span>
+              <button className={styles.close} type="button" tabIndex={-1} onClick={onClose}>
+                Close
+              </button>
+            </div>
 
-        <form onSubmit={submit}>
-          <label className="visually-hidden" htmlFor="palette-ask">
-            Ask {appName} something else
-          </label>
-          <input
-            id="palette-ask"
-            className={styles.input}
-            value={askText}
-            onChange={(event) => onAskTextChange(event.target.value)}
-            placeholder={`Or ask ${appName} to…`}
-            autoComplete="off"
-            autoFocus
-            // Read-only, not disabled: a disabled field can't hold focus, and
-            // then Esc would never reach the palette to close it.
-            readOnly={!available}
-            aria-disabled={!available}
-            role="combobox"
-            aria-expanded="true"
-            aria-controls="palette-commands"
-            aria-activedescendant={available ? `palette-command-${index}` : undefined}
-          />
-        </form>
+            <form onSubmit={submit}>
+              <label className="visually-hidden" htmlFor="palette-ask">
+                Ask {appName} something else
+              </label>
+              <input
+                id="palette-ask"
+                className={styles.input}
+                value={askText}
+                onChange={(event) => onAskTextChange(event.target.value)}
+                placeholder={`Or ask ${appName} to…`}
+                autoComplete="off"
+                autoFocus
+                role="combobox"
+                aria-expanded="true"
+                aria-controls="palette-commands"
+                aria-activedescendant={`palette-command-${index}`}
+              />
+            </form>
 
-        <div id="palette-commands" className={styles.list} role="listbox" aria-label="Commands">
-          {commands.map((command, position) => (
-            <button
-              key={command.id}
-              id={`palette-command-${position}`}
-              className={position === index && available ? styles.itemActive : styles.item}
-              type="button"
-              role="option"
-              tabIndex={-1}
-              aria-selected={position === index}
-              disabled={!available}
-              onMouseMove={() => onHover(position)}
-              onClick={() => onRun(command)}
-            >
-              <span className={styles.dot} aria-hidden="true" />
-              {command.label}
-              {position === index && available && (
-                <span className={styles.enter} aria-hidden="true">
-                  ↵
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
+            <div id="palette-commands" className={styles.list} role="listbox" aria-label="Commands">
+              {commands.map((command, position) => (
+                <button
+                  key={command.id}
+                  id={`palette-command-${position}`}
+                  className={position === index ? styles.itemActive : styles.item}
+                  type="button"
+                  role="option"
+                  tabIndex={-1}
+                  aria-selected={position === index}
+                  onMouseMove={() => onHover(position)}
+                  onClick={() => onRun(command)}
+                >
+                  <span className={styles.dot} aria-hidden="true" />
+                  {command.label}
+                  {position === index && (
+                    <span className={styles.enter} aria-hidden="true">
+                      ↵
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
   )

@@ -62,18 +62,29 @@ test.describe('regressions', () => {
 
   test('Esc closes the palette when it has no target', async ({ page, suggest }) => {
     await openApp(page)
-    // The title has no text of its own, so the palette has nothing to act on.
+    // With no text anywhere, the palette has nothing to act on.
     await placeCursor(page, '.tiptap h1', 'AI rollout plan', 'end')
+    await page.keyboard.press('ControlOrMeta+a')
+    await page.keyboard.press('Backspace')
     await page.getByRole('button', { name: /Commands/ }).click()
-    await expect(palette(page)).toContainText('select text, or put the cursor')
+    await expect(palette(page)).toContainText('Write something first, then ask')
+    await expect(page.getByRole('option')).toHaveCount(0)
 
     // Focus has to land inside the palette, or Esc never reaches it.
-    await expect(page.getByLabel(/something else/)).toBeFocused()
-
-    await page.keyboard.press('Enter')
-    expect(suggest.requests).toHaveLength(0)
+    await expect(page.getByRole('button', { name: 'Close' })).toBeFocused()
 
     await page.keyboard.press('Escape')
+    await expect(palette(page)).toBeHidden()
+    expect(suggest.requests).toHaveLength(0)
+  })
+
+  test('Close works on the palette with no target', async ({ page }) => {
+    await openApp(page)
+    await placeCursor(page, '.tiptap h1', 'AI rollout plan', 'end')
+    await page.keyboard.press('ControlOrMeta+a')
+    await page.keyboard.press('Backspace')
+    await page.getByRole('button', { name: /Commands/ }).click()
+    await page.getByRole('button', { name: 'Close' }).click()
     await expect(palette(page)).toBeHidden()
   })
 })

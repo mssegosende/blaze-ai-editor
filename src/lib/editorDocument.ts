@@ -224,12 +224,56 @@ export function placeFromSection(editor: Editor, position: number): SuggestionPl
   }
 }
 
+export interface PaletteSurroundings {
+  /** False until the user has put the cursor in the document themselves. */
+  cursorPlaced: boolean
+  /** The top-level block nearest the top of the viewport. */
+  firstVisibleBlock: number
+}
+
+/** The nearest section with text: from this block downward, then back upward. */
+function placeNearBlock(editor: Editor, start: number): SuggestionPlace | null {
+  const blocks = topLevelBlocks(editor.state.doc)
+  const first = Math.min(Math.max(start, 0), blocks.length - 1)
+  const below = blocks.slice(first)
+  const above = blocks.slice(0, first).reverse()
+  for (const block of [...below, ...above]) {
+    const place = placeFromSection(editor, block.from)
+    if (place) return place
+  }
+  return null
+}
+
 /**
- * What the palette would act on: the selection if there is one, otherwise the
- * section holding the cursor. Null when neither has any text.
+ * What the palette would act on: the selection, then the section at a cursor the
+ * user placed, then the section nearest the top of the viewport. Null only when
+ * the document has no text at all.
  */
-export function placeForPalette(editor: Editor): SuggestionPlace | null {
-  return placeFromSelection(editor) ?? placeFromSection(editor, editor.state.selection.from)
+export function placeForPalette(
+  editor: Editor,
+  { cursorPlaced, firstVisibleBlock }: PaletteSurroundings,
+): SuggestionPlace | null {
+  const selected = placeFromSelection(editor)
+  if (selected) return selected
+
+  const atCursor = cursorPlaced ? placeFromSection(editor, editor.state.selection.from) : null
+  return atCursor ?? placeNearBlock(editor, firstVisibleBlock)
+}
+
+/** Which top-level block is nearest the top of the viewport. Reads the DOM. */
+export function firstVisibleBlockIndex(editor: Editor): number {
+  const { doc } = editor.state
+  const bar = document.querySelector('[data-app-bar]')?.getBoundingClientRect()
+  // The bar is only in the way when it's a thin strip across the top, not the tall sidebar.
+  const top = bar && bar.height < window.innerHeight / 2 ? bar.bottom : 0
+
+  let offset = 0
+  for (let index = 0; index < doc.childCount; index += 1) {
+    const element = editor.view.nodeDOM(offset)
+    if (element instanceof HTMLElement && element.getBoundingClientRect().bottom > top) return index
+    offset += doc.child(index).nodeSize
+  }
+  return 0
 }
 
 /** The prompts whose section is still there and still has text. */
