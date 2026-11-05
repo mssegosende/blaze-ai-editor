@@ -15,9 +15,9 @@ Test names are the names the tests will have. Update the status when a row is pr
 | # | Brief | Proof (file or test) | Status |
 |---|---|---|---|
 | C1 | "Don't build a full markdown editor from scratch, a prebuilt like tiptap or similar is fine." | `package.json` (`@tiptap/*`) | done |
-| C2 | "The user is always in control" | test "the document does not change until accept" | planned |
-| C3 | "rewrite paragraphs" | Rewrite command in `src/constants.ts`; test "accepting every change reproduces the rewrite exactly" | planned |
-| C4 | "fix tone" | More formal and Warmer commands in `src/constants.ts`; `server/prompt.test.ts` | planned |
+| C2 | "The user is always in control" | test "the document does not change until accept" | done |
+| C3 | "rewrite paragraphs" | Rewrite command in `src/constants.ts`; test "accepting every change reproduces the rewrite exactly" | done |
+| C4 | "fix tone" | More formal and Warmer commands in `src/constants.ts`; `server/prompt.test.ts` | done |
 | C5 | "restructure sections" | `server/prompt.test.ts`: "only a section target is allowed to restructure"; tests "accepting a restructured section is one transaction", "a restructured section keeps headings, lists, bold and links"; decision 15 | planned |
 | C6 | "follow specific instructions" | Ask field in `src/components/SelectionPill/` and `src/components/CommandPalette/`; `server/prompt.test.ts`: "a free-text instruction on a first request reaches the model unchanged"; test "the Ask field sends free text as a first request" | planned |
 
@@ -28,8 +28,8 @@ Test names are the names the tests will have. Update the status when a row is pr
 | B0 | "A single page web app, no auth required" | `src/App.tsx` (no router, no login) | done |
 | B1 | "The user can write and edit Markdown in a browser-based editor" | `src/components/EditorPane/`; test "markdown round trip keeps headings, lists, bold and links" | done |
 | B2 | "An AI agent can suggest changes to the document (or a selection)" | Decisions 7 and 14; `src/lib/sections.ts`; tests "a selection request sends only the selected Markdown", "the current section is the blocks under the cursor's heading", "a section command sends only that section" | planned |
-| B3 | "Suggestions appear as visible diffs — the user can see exactly what the AI wants to change before accepting" | `src/components/DiffView/`; `src/lib/diff.test.ts`; test "a paragraph split shows up as a visible change" | planned |
-| B4 | "The user can accept, reject, or refine the AI's suggestions" | tests "accepting every change reproduces the rewrite exactly", "rejecting every change reproduces the original exactly", "partial accept keeps only the chosen changes"; `server/prompt.test.ts`: "a refine request sends the original, the current suggestion and the instruction" | planned |
+| B3 | "Suggestions appear as visible diffs — the user can see exactly what the AI wants to change before accepting" | `src/components/DiffView/`; `src/lib/diff.test.ts`; test "a paragraph split shows up as a visible change" | done |
+| B4 | "The user can accept, reject, or refine the AI's suggestions" | tests "accepting every change reproduces the rewrite exactly", "rejecting every change reproduces the original exactly", "partial accept keeps only the chosen changes"; `server/prompt.test.ts`: "a refine request sends the original, the current suggestion and the instruction" | done |
 | B5 | "The experience feels collaborative — like working with a smart co-author, not a chatbot in a sidebar and not something that completes the whole document" | No chat history anywhere in the UI; manual walkthrough; `SYSTEM_PROMPT` in `server/prompt.ts`; test "a section command sends only that section" | planned |
 
 **What to Submit**
@@ -70,7 +70,7 @@ Test names are the names the tests will have. Update the status when a row is pr
 | S6 | Accept is a single transaction; Ctrl+Z undoes all of it | test "one undo restores the whole accepted suggestion" | done |
 | S7 | Accepting an inline selection keeps its paragraph whole | test "an inline selection does not split its paragraph" | done |
 | S8 | Editing the paragraph discards the pending suggestion with a notice | tests "editing inside the paragraph discards the suggestion", "editing elsewhere keeps the suggestion and moves its range" | done |
-| S9 | The request state is a reducer: idle, loading, success, error | `src/hooks/useAiRequest.ts`; tests "a failed refine keeps the current suggestion", "a stale response is ignored" | planned |
+| S9 | The request state is a reducer: idle, loading, success, error | `src/hooks/useAiRequest.ts`; `src/lib/cardView.test.ts`: "a failed refine keeps the current suggestion"; `src/hooks/useAiRequest.test.ts`: "a stale response is ignored" | done |
 | S10 | One action makes one model call | `server/app.test.ts`: "a model failure makes no second call" | done |
 | S11 | The API key never reaches the browser | `server/app.test.ts`: "the key goes to OpenRouter and never into a response or a log"; no `VITE_` variables; manual check of `dist/` for the variable name | planned |
 | S12 | Malformed model output never reaches the UI as a suggestion | `server/parseModelOutput.test.ts`; `server/app.test.ts`: "malformed model output is an error, not a suggestion" | done |
@@ -83,7 +83,7 @@ Test names are the names the tests will have. Update the status when a row is pr
 | S19 | Models compared 3 times per paragraph and instruction, with agreement next to quality, speed and cost | `scripts/compareModels.ts`, `scripts/scoreComparison.ts`, `docs/model-comparison.json`; "Model comparison" below | done |
 | S20 | One model recommended | "Model comparison" below; `MODEL` in `server/index.ts` | done |
 | S21 | Section context kept only if it measurably helps | `scripts/compareContext.ts`, `docs/context-comparison.json`; "Context comparison" below | done |
-| S22 | The section is sent as read-only context | `server/prompt.test.ts`: "the section goes along as context, separate from the passage"; test "a selection request includes its section as context" | planned |
+| S22 | The section is sent as read-only context | `server/prompt.test.ts`: "the section goes along as context, separate from the passage"; test "a selection request includes its section as context" | done |
 | S23 | JSON is validated without zod | `server/parseModelOutput.ts`, `parseSuggestRequest` in `server/app.ts`; decision 13 | done |
 | S24 | `/` with nothing selected acts on the current section and names it | `src/lib/sections.ts`; tests "the current section is the blocks under the cursor's heading", "a title with no text of its own has no target", "the palette names its target" | planned |
 | S25 | First-open state: empty co-author card, "Try one" prompts and the hint | `src/components/CoAuthorCard/`; test "Try one is hidden when its section is gone"; manual walkthrough of a new user | planned |

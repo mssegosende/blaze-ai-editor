@@ -28,3 +28,4 @@ export const COMMANDS = {
 /** Direct actions in the selection pill. */
 export const PILL_COMMANDS: Command[] = [COMMANDS.rewrite, COMMANDS.shorter, COMMANDS.grammar]
 export const TONE_COMMANDS: Command[] = [COMMANDS.formal, COMMANDS.warmer, COMMANDS.keep]
+export const REFINE_COMMANDS: Command[] = [COMMANDS.formal, COMMANDS.warmer, COMMANDS.keep, COMMANDS.shorter]

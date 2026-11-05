@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { computeDiff } from './diff'
+import { changesOf, computeDiff } from './diff'
 import type { SuggestionPlace } from './editorDocument'
-import { sessionReducer } from './suggestionSession'
+import { makeIteration, sessionReducer } from './suggestionSession'
 import type { Iteration, Session } from './suggestionSession'
 
 const place: SuggestionPlace = {
@@ -84,6 +84,36 @@ describe('sessionReducer', () => {
     session = sessionReducer(session, { type: 'addIteration', iteration: iteration('one A two beta three gamma four') })
     expect(session?.decisions.size).toBe(0)
     expect(session?.current).toBe(1)
+  })
+
+  it("a refine's diff compares the original with the latest rewrite", () => {
+    const first = makeIteration(place.markdown, 'Shorter', 'one A two beta three gamma four', 'Why.')
+    const refined = makeIteration(place.markdown, 'Warmer', 'one A two B three gamma four', 'Why.')
+    expect(first.diff.changeCount).toBe(1)
+    expect(refined.diff.changeCount).toBe(2)
+    expect(changesOf(refined.diff)[0]).toMatchObject({ removed: 'alpha', added: 'A' })
+  })
+
+  it('a refine in flight leaves the answers alone', () => {
+    const session = sessionReducer(reviewing(), { type: 'refine', label: 'Warmer' })
+    expect(session?.label).toBe('Warmer')
+    expect(session?.iterations).toHaveLength(1)
+    expect(session?.current).toBe(0)
+  })
+
+  it('stepping back through the history makes no call and clears the marks', () => {
+    let session: Session | null = reviewing()
+    session = sessionReducer(session, { type: 'addIteration', iteration: iteration('one A two beta three gamma four') })
+    session = sessionReducer(session, { type: 'decide', id: 0, decision: 'keep' })
+    session = sessionReducer(session, { type: 'selectIteration', index: 0 })
+    expect(session?.current).toBe(0)
+    expect(session?.decisions.size).toBe(0)
+    expect(session?.iterations).toHaveLength(2)
+  })
+
+  it('choosing the answer already showing keeps its marks', () => {
+    const session = sessionReducer(reviewing(), { type: 'decide', id: 0, decision: 'keep' })
+    expect(sessionReducer(session, { type: 'selectIteration', index: 0 })?.decisions.size).toBe(1)
   })
 
   it('moving the place keeps the review going', () => {

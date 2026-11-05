@@ -1,4 +1,4 @@
-import { changesOf } from './diff'
+import { changesOf, computeDiff } from './diff'
 import type { ChangeDecision, SuggestionDiff } from './diff'
 import type { SuggestionPlace } from './editorDocument'
 
@@ -23,9 +23,19 @@ export interface Session {
   activeChange: number
 }
 
+/**
+ * The diff always runs from the original to this rewrite, never from the
+ * previous answer: what the user reviews is what accept would apply.
+ */
+export function makeIteration(original: string, label: string, rewrite: string, rationale: string): Iteration {
+  return { label, rewrite, rationale, diff: computeDiff(original, rewrite) }
+}
+
 export type SessionAction =
   | { type: 'begin'; place: SuggestionPlace; label: string }
+  | { type: 'refine'; label: string }
   | { type: 'addIteration'; iteration: Iteration }
+  | { type: 'selectIteration'; index: number }
   | { type: 'selectChange'; id: number }
   | { type: 'stepChange'; delta: 1 | -1 }
   | { type: 'decide'; id: number; decision: ChangeDecision }
@@ -66,6 +76,11 @@ export function sessionReducer(session: Session | null, action: SessionAction): 
   if (!session) return null
 
   switch (action.type) {
+    case 'refine':
+      return { ...session, label: action.label }
+    case 'selectIteration':
+      if (!session.iterations[action.index] || action.index === session.current) return session
+      return { ...session, current: action.index, decisions: new Map(), activeChange: 0 }
     case 'addIteration':
       // The changes are new, so marks made on the previous answer can't carry over.
       return {

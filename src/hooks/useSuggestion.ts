@@ -1,32 +1,17 @@
 import type { Editor } from '@tiptap/core'
 import type { Transaction } from '@tiptap/pm/state'
-import { useCallback, useEffect, useReducer } from 'react'
+import { useCallback, useEffect, useReducer, useState } from 'react'
 import type { SuggestRequest } from '../../shared/contract'
 import type { Command } from '../constants'
 import { APPLY_META, applyMarkdown, mapPlace } from '../lib/applySuggestion'
-import { applyDecisions, computeDiff, keepAll } from '../lib/diff'
-import type { ChangeDecision, SuggestionDiff } from '../lib/diff'
+import { deriveCardView } from '../lib/cardView'
+import { applyDecisions, keepAll } from '../lib/diff'
+import type { ChangeDecision } from '../lib/diff'
 import { normalizeMarkdown, placeFromSelection } from '../lib/editorDocument'
 import type { SuggestionPlace } from '../lib/editorDocument'
-import { currentIteration, sessionReducer } from '../lib/suggestionSession'
+import { currentIteration, makeIteration, sessionReducer } from '../lib/suggestionSession'
 import { setTargetHighlight } from '../lib/targetHighlight'
 import { useAiRequest } from './useAiRequest'
-
-export interface ReviewView {
-  kind: 'review'
-  title: string
-  label: string
-  rationale: string
-  diff: SuggestionDiff
-  decisions: ReadonlyMap<number, ChangeDecision>
-  activeChange: number
-}
-
-export type CardView =
-  | { kind: 'idle' }
-  | { kind: 'loading'; title: string; label: string }
-  | { kind: 'error'; title: string; message: string }
-  | ReviewView
 
 function buildRequest(place: SuggestionPlace, instruction: string, currentSuggestion: string | null): SuggestRequest {
   return {
@@ -52,10 +37,12 @@ export function useSuggestion(editor: Editor, showNotice: (message: string, undo
   const ai = useAiRequest()
   const { run, reset } = ai
   const [session, dispatch] = useReducer(sessionReducer, null)
+  const [refineText, setRefineText] = useState('')
 
   const endSession = useCallback(() => {
     reset()
     dispatch({ type: 'end' })
+    setRefineText('')
     setTargetHighlight(editor, null)
   }, [editor, reset])
 
@@ -80,37 +67,47 @@ export function useSuggestion(editor: Editor, showNotice: (message: string, undo
     }
   }, [editor, endSession, place, showNotice])
 
-  const askAbout = useCallback(
-    async (target: SuggestionPlace, command: Command) => {
-      dispatch({ type: 'begin', place: target, label: command.label })
-      setTargetHighlight(editor, target)
-
-      const suggestion = await run(buildRequest(target, command.instruction, null))
+  const request = useCallback(
+    async (target: SuggestionPlace, command: Command, currentSuggestion: string | null) => {
+      const suggestion = await run(buildRequest(target, command.instruction, currentSuggestion))
       if (!suggestion) return
-
       const rewrite = normalizeMarkdown(editor, suggestion.rewrite)
       dispatch({
         type: 'addIteration',
-        iteration: {
-          label: command.label,
-          rewrite,
-          rationale: suggestion.rationale,
-          diff: computeDiff(target.markdown, rewrite),
-        },
+        iteration: makeIteration(target.markdown, command.label, rewrite, suggestion.rationale),
       })
+      setRefineText('')
     },
     [editor, run],
+  )
+
+  const askAbout = useCallback(
+    (target: SuggestionPlace, command: Command) => {
+      dispatch({ type: 'begin', place: target, label: command.label })
+      setTargetHighlight(editor, target)
+      void request(target, command, null)
+    },
+    [editor, request],
   )
 
   const askAboutSelection = useCallback(
     (command: Command) => {
       const target = placeFromSelection(editor)
-      if (target) void askAbout(target, command)
+      if (target) askAbout(target, command)
     },
     [askAbout, editor],
   )
 
   const iteration = session ? currentIteration(session) : undefined
+
+  const refine = useCallback(
+    (command: Command) => {
+      if (!session || !iteration) return
+      dispatch({ type: 'refine', label: command.label })
+      void request(session.place, command, iteration.rewrite)
+    },
+    [iteration, request, session],
+  )
 
   // The button just pressed disappears with the review, so focus would be lost
   // and Ctrl+Z would no longer reach the editor.
@@ -161,30 +158,23 @@ export function useSuggestion(editor: Editor, showNotice: (message: string, undo
   }, [])
   const selectChange = useCallback((id: number) => dispatch({ type: 'selectChange', id }), [])
   const stepChange = useCallback((delta: 1 | -1) => dispatch({ type: 'stepChange', delta }), [])
-
-  let cardView: CardView = { kind: 'idle' }
-  if (session) {
-    const { title } = session.place
-    if (iteration) {
-      cardView = {
-        kind: 'review',
-        title,
-        label: iteration.label,
-        rationale: iteration.rationale,
-        diff: iteration.diff,
-        decisions: session.decisions,
-        activeChange: session.activeChange,
-      }
-    } else if (ai.state.status === 'error') {
-      cardView = { kind: 'error', title, message: ai.state.message }
-    } else {
-      cardView = { kind: 'loading', title, label: session.label }
-    }
-  }
+  const selectIteration = useCallback((index: number) => dispatch({ type: 'selectIteration', index }), [])
 
   return {
-    cardView,
+    cardView: deriveCardView(session, ai.state),
     askAboutSelection,
-    review: { acceptAll, applyDecided, rejectAll, close, decide, selectChange, stepChange },
+    refineText,
+    review: {
+      acceptAll,
+      applyDecided,
+      rejectAll,
+      close,
+      decide,
+      selectChange,
+      stepChange,
+      selectIteration,
+      refine,
+      setRefineText,
+    },
   }
 }

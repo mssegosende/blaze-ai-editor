@@ -26,11 +26,20 @@ function describe(change: ChangeSegment, decision: ChangeDecision | undefined): 
 }
 
 function ChangeContent({ change, decision }: { change: ChangeSegment; decision: ChangeDecision | undefined }) {
+  // A settled change with no text left still needs something to click.
   if (decision === 'keep') {
-    return <ins className={styles.kept}>{visible(change.added) || '∅'}</ins>
+    return change.added === '' ? (
+      <span className={styles.mark} />
+    ) : (
+      <ins className={styles.kept}>{visible(change.added)}</ins>
+    )
   }
   if (decision === 'discard') {
-    return <span className={styles.discarded}>{visible(change.removed) || '∅'}</span>
+    return change.removed === '' ? (
+      <span className={styles.mark} />
+    ) : (
+      <span className={styles.discarded}>{visible(change.removed)}</span>
+    )
   }
   return (
     <>

@@ -1,8 +1,10 @@
+import type { Command } from '../../constants'
+import type { CardView, ReviewView } from '../../lib/cardView'
 import type { ChangeDecision } from '../../lib/diff'
 import { changesOf } from '../../lib/diff'
-import type { CardView, ReviewView } from '../../hooks/useSuggestion'
 import { ChangeRow } from '../ChangeRow/ChangeRow'
 import { DiffView } from '../DiffView/DiffView'
+import { RefineControls } from '../RefineControls/RefineControls'
 import styles from './CoAuthorCard.module.css'
 
 export interface ReviewActions {
@@ -13,24 +15,60 @@ export interface ReviewActions {
   decide: (id: number, decision: ChangeDecision) => void
   selectChange: (id: number) => void
   stepChange: (delta: 1 | -1) => void
+  selectIteration: (index: number) => void
+  refine: (command: Command) => void
+  setRefineText: (text: string) => void
 }
 
 interface CoAuthorCardProps {
+  appName: string
   view: CardView
   actions: ReviewActions
+  refineCommands: Command[]
+  refineText: string
+  onSubmitRefineText: () => void
 }
 
 function pad(count: number): string {
   return String(count).padStart(2, '0')
 }
 
-function Review({ view, actions }: { view: ReviewView; actions: ReviewActions }) {
+function History({ view, onSelect }: { view: ReviewView; onSelect: (index: number) => void }) {
+  if (view.history.length === 1) return <p className={styles.chip}>{view.label}</p>
+  return (
+    <ol className={styles.history} aria-label="Refine history">
+      {view.history.map((label, index) => (
+        <li key={index} className={styles.historyItem}>
+          {index > 0 && <span aria-hidden="true">→</span>}
+          <button
+            className={index === view.current ? styles.historyCurrent : styles.historyButton}
+            type="button"
+            aria-current={index === view.current ? 'step' : undefined}
+            onClick={() => onSelect(index)}
+          >
+            {label}
+          </button>
+        </li>
+      ))}
+    </ol>
+  )
+}
+
+function Review({
+  appName,
+  view,
+  actions,
+  refineCommands,
+  refineText,
+  onSubmitRefineText,
+}: Omit<CoAuthorCardProps, 'view'> & { view: ReviewView }) {
   const changes = changesOf(view.diff)
   const total = changes.length
   const decided = changes.filter((change) => view.decisions.has(change.id)).length
   const kept = changes.filter((change) => view.decisions.get(change.id) === 'keep').length
   const left = total - decided
   const position = changes.findIndex((change) => change.id === view.activeChange)
+  const busy = view.refining !== null
 
   return (
     <>
@@ -47,7 +85,7 @@ function Review({ view, actions }: { view: ReviewView; actions: ReviewActions })
           </p>
         </div>
       )}
-      <p className={styles.chip}>{view.label}</p>
+      <History view={view} onSelect={actions.selectIteration} />
       <p className={styles.why}>{view.rationale}</p>
 
       {total > 0 && (
@@ -91,11 +129,27 @@ function Review({ view, actions }: { view: ReviewView; actions: ReviewActions })
           Apply · {kept} kept, {total - kept} dropped
         </button>
       )}
+
+      <RefineControls
+        appName={appName}
+        commands={refineCommands.filter((command) => command.label !== view.label)}
+        text={refineText}
+        disabled={busy}
+        onTextChange={actions.setRefineText}
+        onCommand={actions.refine}
+        onSubmitText={onSubmitRefineText}
+      />
+      {view.refining !== null && <p className={styles.status}>Refining: {view.refining}…</p>}
+      {view.refineError !== null && (
+        <p className={styles.refineError} role="alert">
+          {view.refineError} Your current suggestion is still here.
+        </p>
+      )}
     </>
   )
 }
 
-export function CoAuthorCard({ view, actions }: CoAuthorCardProps) {
+export function CoAuthorCard({ appName, view, actions, refineCommands, refineText, onSubmitRefineText }: CoAuthorCardProps) {
   return (
     <aside className={styles.panel} aria-label="Co-author">
       <div className={styles.card} aria-live="polite">
@@ -126,7 +180,16 @@ export function CoAuthorCard({ view, actions }: CoAuthorCardProps) {
           </>
         )}
 
-        {view.kind === 'review' && <Review view={view} actions={actions} />}
+        {view.kind === 'review' && (
+          <Review
+            appName={appName}
+            view={view}
+            actions={actions}
+            refineCommands={refineCommands}
+            refineText={refineText}
+            onSubmitRefineText={onSubmitRefineText}
+          />
+        )}
       </div>
       {view.kind === 'review' && view.diff.mode === 'inline' && view.diff.changeCount > 0 && (
         <p className={styles.tip}>Click a change to select it, or use the arrows.</p>

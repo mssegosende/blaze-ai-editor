@@ -11,6 +11,7 @@ import {
   DOCUMENT_SUBTITLE,
   DOCUMENT_TITLE,
   PILL_COMMANDS,
+  REFINE_COMMANDS,
   TONE_COMMANDS,
 } from './constants'
 import type { Command } from './constants'
@@ -38,7 +39,14 @@ function Workspace({ editor }: { editor: Editor }) {
     <div className={styles.app}>
       <Sidebar appName={APP_NAME} documentTitle={DOCUMENT_TITLE} documentSubtitle={DOCUMENT_SUBTITLE} />
       <EditorPane editor={editor} fileName={DOCUMENT_FILE_NAME} />
-      <CoAuthorCard view={suggestion.cardView} actions={suggestion.review} />
+      <CoAuthorCard
+        appName={APP_NAME}
+        view={suggestion.cardView}
+        actions={suggestion.review}
+        refineCommands={REFINE_COMMANDS}
+        refineText={suggestion.refineText}
+        onSubmitRefineText={() => suggestion.review.refine(askCommand(suggestion.refineText))}
+      />
       {pill.position && (
         <SelectionPill
           appName={APP_NAME}

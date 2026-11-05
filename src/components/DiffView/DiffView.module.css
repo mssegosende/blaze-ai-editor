@@ -52,6 +52,15 @@
   border-bottom: 1px dotted var(--color-on-dark-muted);
 }
 
+.mark {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  margin: 0 2px;
+  vertical-align: -2px;
+  background: var(--color-on-dark-muted);
+}
+
 .block {
   display: flex;
   flex-direction: column;
