@@ -112,18 +112,20 @@ function Workspace({ editor }: { editor: Editor }) {
         onCommands={palette.open}
         onShortcuts={() => setShortcutsOpen(true)}
       />
-      <EditorPane editor={editor} fileName={DOCUMENT_FILE_NAME} showHint={!suggestion.hasAsked} />
-      <CoAuthorCard
-        appName={APP_NAME}
-        view={cardView}
-        actions={review}
-        refineCommands={REFINE_COMMANDS}
-        refineText={suggestion.refineText}
-        onSubmitRefineText={() => review.refine(askCommand(suggestion.refineText))}
-        tryPrompts={tryPrompts}
-        onTry={(prompt) => suggestion.askAboutHeading(prompt.heading, prompt.command)}
-        shortcuts={SHORTCUTS}
-      />
+      <div className={styles.workspace}>
+        <EditorPane editor={editor} fileName={DOCUMENT_FILE_NAME} showHint={!suggestion.hasAsked} />
+        <CoAuthorCard
+          appName={APP_NAME}
+          view={cardView}
+          actions={review}
+          refineCommands={REFINE_COMMANDS}
+          refineText={suggestion.refineText}
+          onSubmitRefineText={() => review.refine(askCommand(suggestion.refineText))}
+          tryPrompts={tryPrompts}
+          onTry={(prompt) => suggestion.askAboutHeading(prompt.heading, prompt.command)}
+          shortcuts={SHORTCUTS}
+        />
+      </div>
       {pill.position && (
         <SelectionPill
           appName={APP_NAME}

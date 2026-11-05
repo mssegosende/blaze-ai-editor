@@ -1,6 +1,6 @@
 .column {
   min-width: 0;
-  padding: var(--space-8) var(--space-sheet-gap) var(--space-page-end);
+  padding: var(--space-8) 0 var(--space-page-end);
 }
 
 .top {

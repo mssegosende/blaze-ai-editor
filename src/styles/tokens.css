@@ -79,7 +79,8 @@
   --space-7: 22px;
   --space-8: 28px;
   --space-9: 42px;
-  --space-sheet-gap: clamp(20px, 5vw, 72px);
+  --space-workspace-gap: 40px;
+  --space-workspace-x: 28px;
   --space-sheet-top: clamp(28px, 5vw, 64px);
   --space-sheet-x: clamp(24px, 6vw, 84px);
   --space-sheet-bottom: 72px;

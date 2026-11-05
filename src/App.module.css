@@ -1,6 +1,16 @@
 .app {
   display: grid;
-  grid-template-columns: var(--size-sidebar) minmax(0, 1fr) var(--size-panel);
+  grid-template-columns: var(--size-sidebar) minmax(0, 1fr);
   min-height: 100vh;
   background: var(--color-app);
+}
+
+/* The document and the card stay together, centered in the space beside the sidebar. */
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(0, var(--size-sheet)) var(--size-panel);
+  justify-content: center;
+  column-gap: var(--space-workspace-gap);
+  min-width: 0;
+  padding-inline: var(--space-workspace-x);
 }

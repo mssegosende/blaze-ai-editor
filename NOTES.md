@@ -109,6 +109,7 @@ Test names are the names the tests will have. Update the status when a row is pr
 | S45 | The pill comes back after Cancel on the same words | `e2e/regressions.spec.ts`: "the pill comes back after Cancel, on the very same words" | done |
 | S46 | Esc closes the palette when it has no target | `e2e/regressions.spec.ts`: "Esc closes the palette when it has no target", now meaning a document with no text | done |
 | S47 | Every entry point produces a suggestion in one click: Commands, `/` and the "Try one" prompts | `e2e/entry.spec.ts`: "every entry point works in one click, with nothing selected" | done |
+| S48 | On wide screens the document and card stay together in a centered container | `src/App.module.css`; `e2e/layout.spec.ts`: "the document and card stay together and centered" at 1280, 1440, 1920 and 2560 | done |
 
 ## Decisions
 
