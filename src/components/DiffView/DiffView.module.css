@@ -25,8 +25,10 @@
 }
 
 .changeActive {
-  outline: 2px solid var(--color-diff-focus);
-  outline-offset: 1px;
+  /* Flush with the text: the gap to the next word is too small for anything wider. */
+  outline: 1px solid var(--color-diff-focus);
+  outline-offset: 0;
+  background: var(--color-on-dark-hover);
 }
 
 /* Deleted and added text differ by more than color: strike and underline. */

@@ -41,12 +41,13 @@ The browser tests never call the real API. They start only the web app, not the 
 
 - **A Markdown editor**, built on Tiptap, that opens straight into a sample document. You can also write your own text and ask about that.
 - **Three ways to ask.** Select text and use the pill that appears, press `/` for the command palette, or click a "Try one" prompt. Each one offers fixed actions, and the pill and palette also take free text, so you can give specific instructions on the first request.
-- **Selection or section.** With text selected, the AI works on that text. With nothing selected, `/` works on the section holding the cursor. It can restructure a section, but never rewrites the whole document.
+- **Selection or section.** With text selected, the AI works on that text. With nothing selected, the palette works on the section at your cursor or, if you haven't placed one, the section nearest the top of the screen, and it names that section before anything runs. It can restructure a section, but never rewrites the whole document.
 - **A word-level diff in the card**, with the AI's one-sentence rationale above it. You can keep or discard each change, step through them with the arrows or by clicking, or accept or reject everything at once.
 - **Refine.** Ask for "more formal", "warmer" or anything else on the same suggestion. Earlier answers stay in a history you can step back through.
 - **One undo.** An accepted suggestion goes in as a single transaction, so one Ctrl+Z removes all of it and none of your typing.
 - **Stale protection.** If you edit a paragraph while a suggestion for it is pending, the suggestion is discarded with a notice. Paste and undo count as edits too.
 - **Clear failures.** A request can be cancelled, and a missing key, exhausted credit or unreachable server each get their own message and a Retry button.
+- **A responsive layout**, mobile-first, with breakpoints around 640 and 1024 px. On wide screens the document and card stay together, centered. Under 1024 px the sidebar becomes a bar on top and the card stacks below the document, scrolling into view when a suggestion arrives.
 - **A small server in `server/`** that exists only to call OpenRouter, so the key never reaches the browser.
 
 ## Key decisions and trade-offs
@@ -98,7 +99,6 @@ A separate test kept the section as read-only context only after it proved usefu
 - **Auth, a database and saving.** The document lives in the browser tab, so a reload goes back to the sample.
 - **Real-time multi-user editing, Docker and settings.** None of them help show the core flow.
 - **Full document history.** Refine has its own history, and undo covers the document.
-- **Responsive layout.** It's desktop only.
 - **A landing page.** The app opens straight into the editor.
 - **Routing, global state libraries, UI kits and animation libraries.** State lives in hooks, and styling is CSS modules with design tokens in one file.
 
@@ -106,6 +106,5 @@ A separate test kept the section as read-only context only after it proved usefu
 
 - **Inline tracked changes**, so you can review a suggestion in place, in the middle of the text it changes.
 - **A mock adapter** for the API client, so the app could run and be demonstrated without a key.
-- **A responsive layout**, moving the card to a bottom sheet on small screens.
 - **Version history** showing how the document evolved with AI help.
 - **Screen-reader testing.** The app uses real buttons, labels and aria state, and contrast and target sizes are measured, but nothing has been tested with an actual screen reader.

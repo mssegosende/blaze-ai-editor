@@ -110,6 +110,12 @@ Test names are the names the tests will have. Update the status when a row is pr
 | S46 | Esc closes the palette when it has no target | `e2e/regressions.spec.ts`: "Esc closes the palette when it has no target", now meaning a document with no text | done |
 | S47 | Every entry point produces a suggestion in one click: Commands, `/` and the "Try one" prompts | `e2e/entry.spec.ts`: "every entry point works in one click, with nothing selected" | done |
 | S48 | On wide screens the document and card stay together in a centered container | `src/App.module.css`; `e2e/layout.spec.ts`: "the document and card stay together and centered" at 1280, 1440, 1920 and 2560 | done |
+| S49 | Responsive layout, mobile-first, with breakpoints around 640 and 1024 px | `src/styles/tokens.css`, each component's CSS module; decision 16 | done |
+| S50 | No horizontal scroll, in every state, at 375, 768, 1024, 1280 and 1920 px | `e2e/responsive.spec.ts`: `expectHealthy` in each state, and "a long unbroken word or link does not push the page sideways" | done |
+| S51 | Every entry point produces a suggestion at every width, with the API stubbed | `e2e/responsive.spec.ts`: "every entry point produces a suggestion" | done |
+| S52 | Under 1024 px the card stacks below the document and scrolls into view when a suggestion arrives | `e2e/responsive.spec.ts`: "the card sits below the document, and the sidebar is a bar on top", "when a suggestion arrives, the card scrolls into view below the bar" | done |
+| S53 | The palette header doesn't wrap into a narrow column | `e2e/responsive.spec.ts`: "the palette header stays readable and the list reachable" | done |
+| S54 | The selection pill can always be reached, even when the selected text is off-screen | `src/hooks/useSelectionPill.ts`; `e2e/responsive.spec.ts`: "the pill stays reachable when the selected text is out of view" | done |
 
 ## Decisions
 
@@ -232,6 +238,15 @@ The brief asks for "restructure sections". When the target is a section, the age
 - **Expensive:** a reorder is accepted and a heading, list or link is lost in the conversion back to the document, or undo restores only part of it. Named tests cover both. Detection can also miss a restructure, for example two blocks swapped and reworded beyond recognition, which would then show as word-by-word changes and could still duplicate text.
 - **Cheap:** a false positive. Removing one bullet, or a reword that happens to match another block better, shows as a block, so the user loses word-by-word review of that one suggestion. They can still accept, reject or refine.
 
+### 16. Responsive, with the card stacked below the document under 1024px
+
+Mobile-first, with breakpoints around 640 and 1024 px. The visual design is unchanged: this is layout only. From 1024 px the sidebar, document and card sit side by side, with the document and card centered together. Under 1024 px the sidebar becomes a sticky bar on top and the card stacks below the document.
+
+A bottom sheet was considered and rejected. The diff is complete inside the card, so the text doesn't need to stay visible during review, and stacking is simpler to keep unbroken. When a suggestion or an error arrives, the card scrolls into view. After accept or reject, the page scrolls back to the text, so the user sees what changed.
+
+- **Expensive:** the user doesn't notice a suggestion arrived, or loses their place. The scroll in both directions is the guard, and both are tested.
+- **Cheap:** on a phone the "Try one" prompts are below the whole document, so a new user has to scroll to find them. The hint and the Commands button in the bar are visible from the start. While a request is loading, Cancel is also down in the card, because the scroll only happens on arrival.
+
 ## Model comparison
 
 **Choice: `anthropic/claude-sonnet-5.5`.** It was the only model that neither invented commitments nor dropped claims, which are the two failures a user is least likely to catch. It costs about 27 times what Haiku does, but the USD 5 cap still allows roughly 1,000 calls at that price.
@@ -314,7 +329,7 @@ Run on 2026-11-05, against the code at commit 09.
 
 **Limits.** These ratios ignore the grain texture, which adds small white specks to the navy. The inactive palette items at 3.07:1 have the least margin. Nothing here was checked with a screen reader.
 
-**Targets.** Every control that takes keyboard focus measured at least 44px in a browser. The clickable changes inside the diff are the deliberate exception: they are as tall as the text and out of the tab order, and the row below them is the 44px path to the same actions (decision 10).
+**Targets.** Every control that takes keyboard focus measures at least 44px in each state at 375, 768, 1024, 1280 and 1920 px, and so do the palette's list items (`e2e/responsive.spec.ts`). The clickable changes inside the diff are the deliberate exception: they are as tall as the text and out of the tab order, and the row below them is the 44px path to the same actions (decision 10).
 
 **Code checks, by search.** No raw colors outside `tokens.css`. No `fetch` outside `src/api/`. No `useState`, `useReducer`, `useEffect` or `useRef` in `src/components/`. No `VITE_` variables. The built `dist/` contains neither the key's variable name nor an OpenRouter key prefix.
 
