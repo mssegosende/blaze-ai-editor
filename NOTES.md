@@ -81,7 +81,7 @@ Test names are the names the tests will have. Update the status when a row is pr
 | S17 | Accessibility: real buttons, labels, aria state, 44px targets, AA contrast | "Accessibility and code audit" below | done |
 | S18 | Opens straight into the editor with the sample document | `src/sampleDocument.ts`; `src/App.tsx` | done |
 | S19 | Models compared 3 times per paragraph and instruction, with agreement next to quality, speed and cost | `scripts/compareModels.ts`, `scripts/scoreComparison.ts`, `docs/model-comparison.json`; "Model comparison" below | done |
-| S20 | One model recommended | "Model comparison" below; `MODEL` in `server/index.ts` | done |
+| S20 | One model recommended | "Model comparison" below; `DEFAULT_MODEL` in `server/config.ts`, which `OPENROUTER_MODEL` can override | done |
 | S21 | Section context kept only if it measurably helps | `scripts/compareContext.ts`, `docs/context-comparison.json`; "Context comparison" below | done |
 | S22 | The section is sent as read-only context | `server/prompt.test.ts`: "the section goes along as context, separate from the passage"; test "a selection request includes its section as context" | done |
 | S23 | JSON is validated without zod | `server/parseModelOutput.ts`, `parseSuggestRequest` in `server/app.ts`; decision 13 | done |

@@ -23,6 +23,8 @@ Put your key in `.env`, replacing the placeholder:
 OPENROUTER_API_KEY=your-key-here
 ```
 
+Optionally, set `OPENROUTER_MODEL` to another OpenRouter model ID. It must support structured output. Without it, Blaze uses `anthropic/claude-sonnet-5.5`, the model chosen below. The server prints the model it's using when it starts, and if OpenRouter can't run the model, the card says so.
+
 Then start it:
 
 ```bash

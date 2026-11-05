@@ -12,12 +12,18 @@ const validBody = {
   context: null,
 }
 
-function modelReply(content: string): Response {
-  return new Response(JSON.stringify({ choices: [{ message: { content } }] }), { status: 200 })
+function modelReply(content: string, finishReason = 'stop'): Response {
+  return new Response(JSON.stringify({ choices: [{ message: { content }, finish_reason: finishReason }] }), {
+    status: 200,
+  })
 }
 
 async function errorCode(response: Response) {
   return ((await response.json()) as SuggestErrorBody).error.code
+}
+
+async function errorOf(response: Response) {
+  return ((await response.json()) as SuggestErrorBody).error
 }
 
 function post(app: ReturnType<typeof createApp>, body: unknown) {
@@ -103,6 +109,36 @@ describe('POST /api/suggest', () => {
     const fetchFn = vi.fn<typeof fetch>(async () => new Response('flagged by moderation', { status: 403 }))
     const response = await post(createApp({ apiKey: API_KEY, model: 'm', fetchFn }), validBody)
     expect(await errorCode(response)).toBe('upstream_error')
+  })
+
+  it.each([
+    ['400', 400],
+    ['404', 404],
+  ])('a model OpenRouter cannot run (%s) gets a message naming the model setting', async (_label, status) => {
+    const fetchFn = vi.fn<typeof fetch>(async () => new Response('not a valid model ID', { status }))
+    const response = await post(createApp({ apiKey: API_KEY, model: 'typo/model', fetchFn }), validBody)
+
+    expect(fetchFn).toHaveBeenCalledTimes(1)
+    expect(response.status).toBe(502)
+    const error = await errorOf(response)
+    expect(error.code).toBe('upstream_error')
+    expect(error.message).toContain('"typo/model"')
+    expect(error.message).toContain('OPENROUTER_MODEL')
+    expect(error.message).not.toContain('not a valid model ID')
+  })
+
+  it.each([
+    ['even when what arrived parses', '{"rewrite":"Short.","rationale":"Cut filler."}'],
+    ['when it stops mid-JSON', '{"rewrite":"Short. And then the model ran out of'],
+  ])('a reply cut off at the token limit is an error, %s', async (_label, content) => {
+    const fetchFn = vi.fn<typeof fetch>(async () => modelReply(content, 'length'))
+    const response = await post(createApp({ apiKey: API_KEY, model: 'm', fetchFn }), validBody)
+
+    expect(fetchFn).toHaveBeenCalledTimes(1)
+    expect(response.status).toBe(502)
+    const error = await errorOf(response)
+    expect(error.code).toBe('invalid_model_output')
+    expect(error.message).toContain('cut off')
   })
 
   it('upstream error text is never passed to the browser', async () => {

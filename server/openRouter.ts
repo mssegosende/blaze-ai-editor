@@ -26,7 +26,7 @@ export interface ModelCallOptions {
 }
 
 interface CompletionResponse {
-  choices?: { message?: { content?: string | null } }[]
+  choices?: { message?: { content?: string | null }; finish_reason?: string | null }[]
   usage?: {
     prompt_tokens?: number
     completion_tokens?: number
@@ -92,8 +92,8 @@ export async function callModel(
     return {
       ok: false,
       code: 'upstream_error',
-      message: messageForStatus(response.status),
-      detail: `OpenRouter returned ${response.status}`,
+      message: messageForStatus(response.status, model),
+      detail: `OpenRouter returned ${response.status} for model ${model}`,
     }
   }
 
@@ -104,7 +104,18 @@ export async function callModel(
     return invalidOutput('response body was not JSON')
   }
 
-  const parsed = parseModelOutput(body.choices?.[0]?.message?.content ?? '')
+  const choice = body.choices?.[0]
+  // Checked before parsing: a cut-off reply can still parse, and would be missing its end.
+  if (choice?.finish_reason === 'length') {
+    return {
+      ok: false,
+      code: 'invalid_model_output',
+      message: "The model's reply was cut off before it finished. Your document is unchanged. Try again, or with a shorter passage.",
+      detail: `reply hit the ${MAX_OUTPUT_TOKENS}-token limit`,
+    }
+  }
+
+  const parsed = parseModelOutput(choice?.message?.content ?? '')
   if (!parsed.ok) return invalidOutput(parsed.reason)
 
   return {
@@ -139,9 +150,14 @@ function invalidOutput(detail: string): ModelResult {
   }
 }
 
-function messageForStatus(status: number): string {
+function messageForStatus(status: number, model: string): string {
   if (status === 401 || status === 403) {
     return 'The OpenRouter API key was rejected. Check the key in your .env file.'
+  }
+  // What OpenRouter returns for a model ID it doesn't know, or one no provider can
+  // run with the strict schema. The request itself is checked before it gets here.
+  if (status === 400 || status === 404) {
+    return `OpenRouter couldn't run the model "${model}". Check OPENROUTER_MODEL in your .env file: it must name a model that supports structured output.`
   }
   if (status === 429) return 'The model is rate limited right now. Wait a moment and try again.'
   return 'The model service had a problem. Try again.'
