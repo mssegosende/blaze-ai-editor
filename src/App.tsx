@@ -4,6 +4,7 @@ import { CoAuthorCard } from './components/CoAuthorCard/CoAuthorCard'
 import { EditorPane } from './components/EditorPane/EditorPane'
 import { SelectionPill } from './components/SelectionPill/SelectionPill'
 import { Sidebar } from './components/Sidebar/Sidebar'
+import { Toast } from './components/Toast/Toast'
 import {
   APP_NAME,
   DOCUMENT_FILE_NAME,
@@ -14,11 +15,13 @@ import {
 } from './constants'
 import type { Command } from './constants'
 import { useBlazeEditor } from './hooks/useBlazeEditor'
+import { useNotice } from './hooks/useNotice'
 import { useSelectionPill } from './hooks/useSelectionPill'
 import { askCommand, useSuggestion } from './hooks/useSuggestion'
 
 function Workspace({ editor }: { editor: Editor }) {
-  const suggestion = useSuggestion(editor)
+  const { notice, show: showNotice, dismiss: dismissNotice } = useNotice()
+  const suggestion = useSuggestion(editor, showNotice)
   const pill = useSelectionPill(editor)
 
   const runCommand = (command: Command) => {
@@ -26,11 +29,16 @@ function Workspace({ editor }: { editor: Editor }) {
     pill.close()
   }
 
+  const undo = () => {
+    editor.commands.undo()
+    dismissNotice()
+  }
+
   return (
     <div className={styles.app}>
       <Sidebar appName={APP_NAME} documentTitle={DOCUMENT_TITLE} documentSubtitle={DOCUMENT_SUBTITLE} />
       <EditorPane editor={editor} fileName={DOCUMENT_FILE_NAME} />
-      <CoAuthorCard view={suggestion.cardView} />
+      <CoAuthorCard view={suggestion.cardView} actions={suggestion.review} />
       {pill.position && (
         <SelectionPill
           appName={APP_NAME}
@@ -45,6 +53,7 @@ function Workspace({ editor }: { editor: Editor }) {
           onAsk={() => runCommand(askCommand(pill.askText))}
         />
       )}
+      <Toast notice={notice} onUndo={undo} />
     </div>
   )
 }

@@ -6,6 +6,29 @@
   overflow-wrap: anywhere;
 }
 
+.change,
+.changeActive {
+  display: inline;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-xs);
+  background: none;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  text-align: left;
+  white-space: pre-wrap;
+}
+
+.change:hover {
+  background: var(--color-on-dark-hover);
+}
+
+.changeActive {
+  outline: 2px solid var(--color-diff-focus);
+  outline-offset: 2px;
+}
+
 /* Deleted and added text differ by more than color: strike and underline. */
 .removed {
   color: var(--color-diff-removed);
@@ -17,6 +40,16 @@
   background: var(--color-diff-added-fill);
   color: var(--color-diff-added);
   text-decoration: none;
+}
+
+.kept {
+  border-bottom: 1px solid var(--color-diff-added-line);
+  color: var(--color-diff-added);
+  text-decoration: none;
+}
+
+.discarded {
+  border-bottom: 1px dotted var(--color-on-dark-muted);
 }
 
 .block {

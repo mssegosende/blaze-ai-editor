@@ -1,19 +1,32 @@
 import type { Editor } from '@tiptap/core'
-import { useCallback, useReducer } from 'react'
+import type { Transaction } from '@tiptap/pm/state'
+import { useCallback, useEffect, useReducer } from 'react'
 import type { SuggestRequest } from '../../shared/contract'
 import type { Command } from '../constants'
-import { computeDiff } from '../lib/diff'
+import { APPLY_META, applyMarkdown, mapPlace } from '../lib/applySuggestion'
+import { applyDecisions, computeDiff, keepAll } from '../lib/diff'
+import type { ChangeDecision, SuggestionDiff } from '../lib/diff'
 import { normalizeMarkdown, placeFromSelection } from '../lib/editorDocument'
 import type { SuggestionPlace } from '../lib/editorDocument'
 import { currentIteration, sessionReducer } from '../lib/suggestionSession'
 import { setTargetHighlight } from '../lib/targetHighlight'
 import { useAiRequest } from './useAiRequest'
 
+export interface ReviewView {
+  kind: 'review'
+  title: string
+  label: string
+  rationale: string
+  diff: SuggestionDiff
+  decisions: ReadonlyMap<number, ChangeDecision>
+  activeChange: number
+}
+
 export type CardView =
   | { kind: 'idle' }
   | { kind: 'loading'; title: string; label: string }
   | { kind: 'error'; title: string; message: string }
-  | { kind: 'review'; title: string; label: string; rationale: string; diff: ReturnType<typeof computeDiff> }
+  | ReviewView
 
 function buildRequest(place: SuggestionPlace, instruction: string, currentSuggestion: string | null): SuggestRequest {
   return {
@@ -31,17 +44,48 @@ export function askCommand(text: string): Command {
   return { id: 'ask', label: `“${instruction}”`, instruction }
 }
 
-export function useSuggestion(editor: Editor) {
+function plural(count: number, noun: string): string {
+  return `${count} ${noun}${count === 1 ? '' : 's'}`
+}
+
+export function useSuggestion(editor: Editor, showNotice: (message: string, undoable?: boolean) => void) {
   const ai = useAiRequest()
-  const { run } = ai
+  const { run, reset } = ai
   const [session, dispatch] = useReducer(sessionReducer, null)
 
-  const askAbout = useCallback(
-    async (place: SuggestionPlace, command: Command) => {
-      dispatch({ type: 'begin', place, label: command.label })
-      setTargetHighlight(editor, place)
+  const endSession = useCallback(() => {
+    reset()
+    dispatch({ type: 'end' })
+    setTargetHighlight(editor, null)
+  }, [editor, reset])
 
-      const suggestion = await run(buildRequest(place, command.instruction, null))
+  // Follows the place through edits elsewhere, and drops the suggestion if its
+  // own paragraph changed. Transactions catch paste and undo, not just typing.
+  const place = session?.place
+  useEffect(() => {
+    if (!place) return
+    const onTransaction = ({ transaction }: { transaction: Transaction }) => {
+      if (!transaction.docChanged || transaction.getMeta(APPLY_META)) return
+      const mapped = mapPlace(place, transaction)
+      if (mapped.touched) {
+        endSession()
+        showNotice('You edited this text, so the suggestion was discarded.')
+      } else {
+        dispatch({ type: 'movePlace', place: mapped.place })
+      }
+    }
+    editor.on('transaction', onTransaction)
+    return () => {
+      editor.off('transaction', onTransaction)
+    }
+  }, [editor, endSession, place, showNotice])
+
+  const askAbout = useCallback(
+    async (target: SuggestionPlace, command: Command) => {
+      dispatch({ type: 'begin', place: target, label: command.label })
+      setTargetHighlight(editor, target)
+
+      const suggestion = await run(buildRequest(target, command.instruction, null))
       if (!suggestion) return
 
       const rewrite = normalizeMarkdown(editor, suggestion.rewrite)
@@ -51,7 +95,7 @@ export function useSuggestion(editor: Editor) {
           label: command.label,
           rewrite,
           rationale: suggestion.rationale,
-          diff: computeDiff(place.markdown, rewrite),
+          diff: computeDiff(target.markdown, rewrite),
         },
       })
     },
@@ -60,15 +104,66 @@ export function useSuggestion(editor: Editor) {
 
   const askAboutSelection = useCallback(
     (command: Command) => {
-      const place = placeFromSelection(editor)
-      if (place) void askAbout(place, command)
+      const target = placeFromSelection(editor)
+      if (target) void askAbout(target, command)
     },
     [askAbout, editor],
   )
 
+  const iteration = session ? currentIteration(session) : undefined
+
+  // The button just pressed disappears with the review, so focus would be lost
+  // and Ctrl+Z would no longer reach the editor.
+  const returnToDocument = useCallback(() => {
+    editor.commands.focus(undefined, { scrollIntoView: false })
+  }, [editor])
+
+  const settle = useCallback(
+    (decisions: ReadonlyMap<number, ChangeDecision>) => {
+      if (!session || !iteration) return
+      const kept = [...decisions.values()].filter((decision) => decision === 'keep').length
+      const markdown = applyDecisions(iteration.diff, decisions)
+
+      endSession()
+      if (kept === 0 || markdown === session.place.markdown) {
+        returnToDocument()
+        showNotice('No changes applied. Your text is unchanged.')
+        return
+      }
+      applyMarkdown(editor, session.place, markdown)
+      returnToDocument()
+      showNotice(`Applied ${plural(kept, 'change')}.`, true)
+    },
+    [editor, endSession, iteration, returnToDocument, session, showNotice],
+  )
+
+  const acceptAll = useCallback(() => {
+    if (iteration) settle(keepAll(iteration.diff))
+  }, [iteration, settle])
+
+  const applyDecided = useCallback(() => {
+    if (session) settle(session.decisions)
+  }, [session, settle])
+
+  const rejectAll = useCallback(() => {
+    endSession()
+    returnToDocument()
+    showNotice('Suggestion rejected. Your text is unchanged.')
+  }, [endSession, returnToDocument, showNotice])
+
+  const close = useCallback(() => {
+    endSession()
+    returnToDocument()
+  }, [endSession, returnToDocument])
+
+  const decide = useCallback((id: number, decision: ChangeDecision) => {
+    dispatch({ type: 'decide', id, decision })
+  }, [])
+  const selectChange = useCallback((id: number) => dispatch({ type: 'selectChange', id }), [])
+  const stepChange = useCallback((delta: 1 | -1) => dispatch({ type: 'stepChange', delta }), [])
+
   let cardView: CardView = { kind: 'idle' }
   if (session) {
-    const iteration = currentIteration(session)
     const { title } = session.place
     if (iteration) {
       cardView = {
@@ -77,6 +172,8 @@ export function useSuggestion(editor: Editor) {
         label: iteration.label,
         rationale: iteration.rationale,
         diff: iteration.diff,
+        decisions: session.decisions,
+        activeChange: session.activeChange,
       }
     } else if (ai.state.status === 'error') {
       cardView = { kind: 'error', title, message: ai.state.message }
@@ -85,5 +182,9 @@ export function useSuggestion(editor: Editor) {
     }
   }
 
-  return { cardView, askAboutSelection }
+  return {
+    cardView,
+    askAboutSelection,
+    review: { acceptAll, applyDecided, rejectAll, close, decide, selectChange, stepChange },
+  }
 }

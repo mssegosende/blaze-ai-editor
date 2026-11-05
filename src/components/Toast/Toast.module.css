@@ -1,0 +1,36 @@
+.toast {
+  position: fixed;
+  bottom: var(--space-8);
+  left: 50%;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-height: var(--size-target);
+  padding: 0 var(--space-6);
+  border-radius: var(--radius-pill);
+  background: var(--surface-navy);
+  background-size: 200px 200px, auto;
+  box-shadow: 0 10px 30px var(--color-shadow);
+  color: var(--color-on-dark);
+  font-size: var(--text-md);
+  transform: translateX(-50%);
+}
+
+.hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.undo {
+  min-width: var(--size-target);
+  min-height: var(--size-target);
+  border: 0;
+  background: none;
+  color: var(--color-sky);
+  font-size: var(--text-md);
+  font-weight: 600;
+}

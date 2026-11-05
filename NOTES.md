@@ -67,9 +67,9 @@ Test names are the names the tests will have. Update the status when a row is pr
 | S3 | The diff is computed in the browser, not described by the model | `src/lib/diff.ts`; contract in `shared/contract.ts` | done |
 | S4 | Bold and links survive a suggestion | tests "partial accept never leaves unbalanced bold markers", "a changed URL is one change, never half a link", "changing link text keeps the URL" | done |
 | S5 | Over 60% changed shows one before/after block | tests "a full rewrite is a single before/after block", "exactly 60% changed stays word by word" | done |
-| S6 | Accept is a single transaction; Ctrl+Z undoes all of it | test "one undo restores the whole accepted suggestion" | planned |
-| S7 | Accepting an inline selection keeps its paragraph whole | test "an inline selection does not split its paragraph" | planned |
-| S8 | Editing the paragraph discards the pending suggestion with a notice | tests "editing inside the paragraph discards the suggestion", "editing elsewhere keeps the suggestion and moves its range" | planned |
+| S6 | Accept is a single transaction; Ctrl+Z undoes all of it | test "one undo restores the whole accepted suggestion" | done |
+| S7 | Accepting an inline selection keeps its paragraph whole | test "an inline selection does not split its paragraph" | done |
+| S8 | Editing the paragraph discards the pending suggestion with a notice | tests "editing inside the paragraph discards the suggestion", "editing elsewhere keeps the suggestion and moves its range" | done |
 | S9 | The request state is a reducer: idle, loading, success, error | `src/hooks/useAiRequest.ts`; tests "a failed refine keeps the current suggestion", "a stale response is ignored" | planned |
 | S10 | One action makes one model call | `server/app.test.ts`: "a model failure makes no second call" | done |
 | S11 | The API key never reaches the browser | `server/app.test.ts`: "the key goes to OpenRouter and never into a response or a log"; no `VITE_` variables; manual check of `dist/` for the variable name | planned |
@@ -94,12 +94,12 @@ Test names are the names the tests will have. Update the status when a row is pr
 | S30 | Retry button after an error | test "retry sends the same request as one new call" | planned |
 | S31 | Keyboard shortcuts | `src/hooks/useShortcuts.ts`; test "typing a slash in a sentence stays text" | planned |
 | S32 | `/` palette | `src/components/CommandPalette/`; test "the palette moves with the arrows and runs on Enter" | planned |
-| S33 | Per-change row: "Change 2 of 6 ‹ › Keep Discard", plus Accept all and Reject all | `src/components/DiffView/`; test "the arrows reach every change" | planned |
-| S34 | Clicking a change selects it | test "clicking a change selects it" | planned |
+| S33 | Per-change row: "Change 2 of 6 ‹ › Keep Discard", plus Accept all and Reject all | `src/components/DiffView/`; test "the arrows reach every change, in both directions" | done |
+| S34 | Clicking a change selects it | test "clicking a change selects it" | done |
 | S35 | Contrast fixes from the mockup audit, with deleted text at least AA on the card | `src/styles/tokens.css`; measured ratios recorded under S17 | planned |
 | S36 | `.gitattributes` with `* text=auto`; mockup renamed to `mockup.html` | `.gitattributes`; `docs/design/mockup.html` | done |
 | S37 | The first request accepts free text, in the selection pill and the palette | See C6 | planned |
-| S38 | A restructured section is accepted in one transaction and keeps headings, lists, bold and links | tests "accepting a restructured section is one transaction", "a restructured section keeps headings, lists, bold and links" | planned |
+| S38 | A restructured section is accepted in one transaction and keeps headings, lists, bold and links | tests "accepting a restructured section is one transaction", "a restructured section keeps headings, lists, bold and links" | done |
 | S39 | Suggestions work on text the user just typed, not only the sample document | test "suggestions work on text the user just typed" | done |
 | S40 | Described as a deliberately single-step agent, and never denied to be one, in the README, `NOTES.md` and UI | Decision 7; `CLAUDE.md`; manual search before delivery | planned |
 
