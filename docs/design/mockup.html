@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blaze</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=IBM+Plex+Mono:wght@400;500&family=Inter+Tight:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FFFFFF; --sheet:#FFFFFF; --soft:#EDEAE6; --ink:#0F223A; --muted:#5F6672; --ai:#9AB3EB; --blue:#0F223A; --blue-2:#2F466F; --app:#F5F3F0;
+    --c-orange:#FF340C; --c-red:#E0070F; --c-pink:#F03172; --c-rose:#ED9AF2;
+    --c-amber:#FFAE00; --c-olive:#CAC307; --c-green:#0F4A42; --c-sky:#9AB3EB;
+    --c-navy:#181A4D; --c-blue:#273287; --c-brown:#441B07;
+    --c-orchid:#C45CFF; --c-violet:#3A46FA; --c-coral:#F65B62; --c-petrol:#006C76;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font-family:"Inter Tight",system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  .mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
+  .wide{font-family:"Archivo",sans-serif;font-weight:900;font-stretch:125%;font-variation-settings:"wdth" 125}
+
+  /* Grain: a tiny noise tile that takes the shine off the blue, like a riso print */
+  :root{
+    --noise:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  .7 0 0 0 -.33'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+  .grain-text{color:var(--blue);background:var(--noise),linear-gradient(160deg,var(--blue) 30%,var(--blue-2) 130%);background-size:200px 200px,auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .grain,.side,.card,.sheet-handle,.pill,.pop,.toast{background:var(--noise),linear-gradient(160deg,var(--blue) 40%,var(--blue-2) 160%);background-size:200px 200px,auto}
+
+  /* ---------- Start screen ---------- */
+  .ticker{color:#fff;overflow:hidden;white-space:nowrap;height:34px;display:flex;align-items:center;font-size:14px}
+  .ticker__track{display:inline-flex;align-items:center;animation:slide-left 40s linear infinite;}
+  .ticker__track span{padding:0 28px;letter-spacing:.12em;font-size:13px}
+  .ticker__track .sep{padding:0;width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.45)}
+
+  .wordmark-wrap{padding:22px 20px 0;overflow:hidden}
+  .wordmark{display:inline-block;font-size:200px;line-height:.8;letter-spacing:-.015em;white-space:nowrap;text-transform:uppercase;margin-bottom:-.04em}
+
+  .nav{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;padding:18px 20px 0}
+  .nav__flow{justify-self:start;display:flex;align-items:center;gap:26px;background:var(--soft);border-radius:6px;padding:16px 26px;font-size:17px}
+  .nav__flow .n{font-size:11px;color:var(--muted);margin-right:6px}
+  .badge{font-size:10px;font-weight:500;color:#fff;background:var(--blue-2);border-radius:4px;padding:3px 7px;margin-left:8px;vertical-align:2px}
+  .nav__center{font-size:21px;font-weight:600;letter-spacing:-.01em}
+  .nav__right{justify-self:end;display:flex;align-items:center;text-decoration:none}
+  .cta{display:flex;align-items:center;background:var(--soft);border-radius:6px;padding:16px 26px;font-size:17px;color:var(--ink);text-decoration:none}
+  .cta-arrow{width:46px;height:46px;border-radius:50%;background:var(--soft);display:grid;place-items:center;margin-left:4px;transition:transform .2s}
+  .nav__right:hover .cta-arrow{transform:translateX(4px)}
+
+  .hero{min-height:100vh;min-height:100svh;display:flex;flex-direction:column}
+  .story{position:relative;flex:1;min-height:380px;display:grid;place-items:center;padding:40px 20px 80px}
+  .part{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 24px 80px;pointer-events:none}
+  .part.in{pointer-events:auto}
+  .part__tag{display:block;font:400 12px 'IBM Plex Mono',monospace;letter-spacing:.18em;text-transform:uppercase;color:var(--blue-2);margin-bottom:20px}
+  .part__text{max-width:640px;font-size:clamp(26px,3.3vw,46px);font-weight:500;line-height:1.12;letter-spacing:-.035em}
+  .part__sub{max-width:460px;margin-top:16px;font-size:16px;line-height:1.5;color:var(--muted)}
+  .btn-outline{display:inline-flex;align-items:center;gap:10px;margin-top:30px;background:transparent;color:var(--blue);border:1.5px solid var(--blue);border-radius:999px;padding:13px 24px;font:500 16px "Inter Tight",sans-serif;text-decoration:none;cursor:pointer;transition:background .2s,color .2s}
+  .btn-outline:hover{background:rgba(15,34,58,.05)}
+  .btn-outline svg{transition:transform .2s}
+  .btn-outline:hover svg{transform:translateX(3px)}
+  .by{margin-top:18px;font-size:13px;color:var(--muted)}
+  .skip{position:absolute;right:20px;bottom:26px;background:none;border:0;font:400 12px "IBM Plex Mono",monospace;color:var(--muted);cursor:pointer}
+  .skip:hover{color:var(--ink)}
+  .skip[hidden]{display:none}
+
+  .fade{opacity:0;transform:translateY(10px);filter:blur(6px);transition:opacity 1s ease,transform 1s cubic-bezier(.2,.7,.2,1),filter 1s ease}
+  .fade.in{opacity:1;transform:none;filter:none}
+  .fade.out{opacity:0;transform:translateY(-8px);filter:blur(6px)}
+  .toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);opacity:0;color:#fff;padding:12px 18px;border-radius:999px;font-size:14px;box-shadow:0 10px 30px rgba(15,34,58,.25);transition:.25s;pointer-events:none;z-index:70}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+
+  @keyframes slide-left{to{transform:translateX(-50%)}}
+
+  @media (max-width:860px){
+    .nav{grid-template-columns:1fr auto}
+    .nav__center{display:none}
+    .nav__flow{gap:16px;padding:14px 16px;font-size:15px}
+    .nav__flow .n{display:none}
+    .cta{padding:14px 16px;font-size:15px}
+  }
+  @media (max-width:520px){
+    .nav{grid-template-columns:1fr;gap:8px}
+    .nav__flow{justify-self:stretch;justify-content:space-between;padding:12px 16px}
+    .nav__flow .n{display:inline}
+    .nav__right{justify-self:stretch;justify-content:space-between}
+    .cta{flex:1}
+    .part__sub{font-size:15px}
+    .skip{right:14px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .ticker__track{animation:none}
+    .fade{transition:none;filter:none;transform:none}
+    html{scroll-behavior:auto}
+  }
+
+  /* =========================================================
+     Editor (#editor)
+     ========================================================= */
+  .app{display:grid;grid-template-columns:232px minmax(0,1fr) 384px;min-height:100vh;background:var(--app)}
+  .app[hidden],#intro[hidden]{display:none}
+
+  /* Sidebar */
+  .side{color:#fff;padding:22px 18px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh}
+  .side__top{display:flex;flex-direction:column;gap:22px;margin-bottom:34px}
+  .side__back{display:inline-flex;align-items:center;gap:8px;align-self:flex-start;color:#fff;text-decoration:none;font-size:14px;border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:7px 14px 7px 11px;transition:background .2s}
+  .side__back:hover{background:rgba(255,255,255,.08)}
+  .side__back .arrow{transition:transform .2s}
+  .side__back:hover .arrow{transform:translateX(-3px)}
+  .side__logo{color:var(--paper);text-decoration:none;font-size:22px;letter-spacing:-.01em;line-height:1}
+  .side__label{font-size:11px;color:rgba(255,255,255,.7);letter-spacing:.04em;margin-bottom:6px}
+  .side__doc{background:rgba(255,255,255,.08);border-radius:6px;padding:12px 12px;font-size:15px;line-height:1.3}
+  .side__doc span{display:block;font-size:11px;color:rgba(255,255,255,.7);margin-top:4px}
+  .side__spacer{flex:1}
+  .side__keys{background:none;border:1px solid rgba(255,255,255,.18);color:var(--paper);border-radius:6px;padding:10px 12px;font:500 14px "Inter Tight",sans-serif;text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
+  .side__keys:hover{background:rgba(255,255,255,.06)}
+  .side__keys .mono{font-size:12px;color:rgba(255,255,255,.7)}
+
+  /* Document */
+  .doc-col{padding:28px clamp(20px,5vw,72px) 120px;min-width:0}
+  .doc-top{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);margin-bottom:18px}
+  .hint{display:inline-flex;align-items:center;gap:10px;background:#fff;border:1px solid rgba(24,26,77,.08);border-radius:999px;padding:8px 14px 8px 12px;font-size:14px;color:var(--ink);transition:opacity .4s}
+  .hint i{width:8px;height:8px;border-radius:50%;background:var(--blue-2)}
+  .hint kbd,.kbd{font:500 11px "IBM Plex Mono",monospace;border:1px solid rgba(24,26,77,.18);border-radius:4px;padding:1px 6px;color:var(--ink);background:#fff}
+  .hint.gone{opacity:0;pointer-events:none}
+  .sheet{background:#fff;border-radius:8px;margin-top:16px;padding:clamp(28px,5vw,64px) clamp(24px,6vw,84px) 72px;box-shadow:0 1px 0 rgba(24,26,77,.06),0 20px 50px -30px rgba(24,26,77,.25);max-width:820px}
+  .sheet h1{font-size:clamp(30px,3.4vw,42px);font-weight:600;letter-spacing:-.04em;line-height:1.05;margin-bottom:8px}
+  .sheet h2{position:relative;font-size:20px;font-weight:600;letter-spacing:-.02em;margin:42px 0 12px}
+  .sheet h2 .num{position:absolute;left:-40px;top:5px;font:400 11px "IBM Plex Mono",monospace;color:#A8A39A}
+  .sheet p,.sheet li{font-size:18px;line-height:1.7;color:#1F2A3D}
+  .sheet ul{padding-left:22px}
+  .sheet li{margin:4px 0}
+  .sheet li::marker{color:var(--blue-2)}
+  .sheet__meta{font-size:12px;color:var(--muted);margin-bottom:22px}
+  .sheet [data-pid]{position:relative;border-radius:4px;transition:background .3s}
+  .sheet [data-pid].active::before{content:"";position:absolute;left:-18px;top:6px;bottom:6px;width:3px;border-radius:2px;background:var(--blue)}
+  .sheet [data-pid].thinking{background:linear-gradient(90deg,rgba(154,179,235,.0),rgba(154,179,235,.28),rgba(154,179,235,0));background-size:200% 100%;animation:shimmer 1.4s linear infinite}
+  @keyframes shimmer{from{background-position:100% 0}to{background-position:-100% 0}}
+  .sheet ::selection{background:rgba(154,179,235,.55)}
+
+  /* Inline diff */
+  .hunk{border-radius:3px;cursor:pointer;padding:1px 0;transition:background .15s}
+  .hunk:hover,.hunk.open{background:rgba(154,179,235,.32)}
+  .hunk del{color:#8E8A7C;text-decoration:line-through;text-decoration-color:rgba(142,138,124,.8)}
+  .hunk ins{text-decoration:none;color:var(--ink);border-bottom:2px solid var(--ai);background:rgba(154,179,235,.22)}
+  .hunk.kept ins{border-bottom:1px solid var(--ai);background:none}
+  .hunk.dropped{border-bottom:1px dotted rgba(24,26,77,.3)}
+  .hunk .mark{display:inline-block;width:2px;height:1em;vertical-align:-2px;background:rgba(24,26,77,.3);margin:0 2px}
+  .pop{position:fixed;z-index:40;display:flex;gap:4px;padding:5px;border-radius:8px;box-shadow:0 10px 30px rgba(24,26,77,.3)}
+  .pop[hidden]{display:none}
+  .pop button{background:none;border:0;color:var(--paper);font:500 14px "Inter Tight",sans-serif;padding:7px 11px;border-radius:5px;cursor:pointer}
+  .pop button:hover{background:rgba(255,255,255,.1)}
+  .pop .k{color:#fff} .pop .d{color:#FFD0F5}
+
+  /* Co-author panel */
+  .panel{padding:28px 20px 40px 0;position:sticky;top:0;height:100vh;overflow:auto;display:flex;flex-direction:column;gap:12px}
+  .card{color:#fff;border-radius:10px;padding:22px 22px 24px}
+  .lbl{font:400 11px "IBM Plex Mono",monospace;letter-spacing:.04em;color:rgba(255,255,255,.7)}
+  .num{font-size:96px;font-weight:200;letter-spacing:-.06em;line-height:.9;margin:14px 0 6px}
+  .numrow{display:flex;align-items:flex-end;gap:14px;margin:14px 0 4px}
+  .numrow .num{margin:0}
+  .numrow p{font-size:14px;line-height:1.25;color:rgba(255,255,255,.82);padding-bottom:10px}
+  .ttl{font-size:22px;font-weight:600;letter-spacing:-.02em}
+  .sub{font-size:14px;line-height:1.5;color:rgba(255,255,255,.82);margin-top:8px}
+  .card .kbd{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:var(--paper)}
+  .tries{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+  .try{display:flex;align-items:center;gap:10px;text-align:left;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:var(--paper);border-radius:6px;padding:11px 12px;font:400 14px "Inter Tight",sans-serif;cursor:pointer}
+  .try:hover{background:rgba(255,255,255,.12)}
+  .dot{width:7px;height:7px;border-radius:50%;flex:none;display:inline-block;border:1.5px solid currentColor;opacity:.65}
+  .hist{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin:16px 0 4px;font-size:13px}
+  .hist button{background:none;border:0;color:rgba(255,255,255,.7);font:400 13px "Inter Tight",sans-serif;padding:4px 6px;border-radius:4px;cursor:pointer}
+  .hist button.on{color:var(--paper);background:rgba(255,255,255,.1);font-weight:500}
+  .hist span{color:rgba(255,255,255,.5)}
+  .why{font-size:15px;line-height:1.5;margin-top:12px;color:rgba(255,255,255,.92)}
+  .why em{font-style:italic;color:#fff}
+  .acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px}
+  .b{border-radius:999px;padding:11px 14px;font:500 14px "Inter Tight",sans-serif;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+  .b--primary{background:#fff;color:var(--blue);border:0}
+  .b--ghost{background:none;color:var(--paper);border:1px solid rgba(255,255,255,.25)}
+  .b--ghost:hover{background:rgba(255,255,255,.06)}
+  .b .kbd{font-size:10px;padding:0 5px}
+  .b--primary .kbd{background:rgba(24,26,77,.08);border-color:rgba(24,26,77,.15);color:var(--ink)}
+  .b--apply{width:100%;margin-top:8px;background:var(--ai);color:var(--ink);border:0}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .chip{display:inline-flex;align-items:center;gap:7px;background:none;border:1px solid rgba(255,255,255,.2);color:var(--paper);border-radius:999px;padding:7px 12px;font:400 13px "Inter Tight",sans-serif;cursor:pointer}
+  .chip:hover{background:rgba(255,255,255,.08)}
+  .refine{display:flex;gap:6px;margin-top:8px}
+  .refine input{flex:1;min-width:0;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:999px;padding:10px 14px;color:var(--paper);font:400 14px "Inter Tight",sans-serif;outline:none}
+  .refine input::placeholder{color:rgba(255,255,255,.6)}
+  .refine input:focus{border-color:#fff}
+  .refine button{width:40px;border-radius:50%;border:0;background:#fff;color:var(--blue);cursor:pointer;font-size:15px}
+  .sep{height:1px;background:rgba(255,255,255,.1);margin:20px 0 14px}
+  .think{font-size:30px;font-weight:300;letter-spacing:-.03em;margin:18px 0 4px}
+  .think .dots::after{content:"";animation:dots 1.2s steps(4) infinite}
+  @keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+  .next{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--sheet);border:1px solid rgba(24,26,77,.08);border-radius:10px;padding:14px 16px;font-size:14px}
+  .next b{font-weight:600}
+  .next .lbl{color:var(--muted);display:block;margin-bottom:4px}
+  .next button{background:var(--blue);color:#fff;border:0;border-radius:999px;padding:8px 14px;font:500 13px "Inter Tight",sans-serif;cursor:pointer;flex:none}
+  .next button:disabled{background:rgba(24,26,77,.12);color:var(--muted);cursor:default}
+  .keys{background:var(--sheet);border-radius:10px;padding:16px;border:1px solid rgba(24,26,77,.08)}
+  .keys dl{display:grid;grid-template-columns:auto 1fr;gap:9px 14px;margin-top:10px;font-size:14px;align-items:center}
+  .keys dt{justify-self:start}
+  .keys .lbl{color:var(--muted)}
+  .proto{font-size:11px;color:var(--muted);padding:2px 4px}
+  .tip{font-size:13px;color:var(--muted);padding:2px 4px}
+
+  /* Floating selection pill */
+  .pill{position:fixed;z-index:30;display:flex;align-items:center;gap:2px;border-radius:999px;padding:5px;box-shadow:0 12px 34px rgba(24,26,77,.3);transform:translateX(-50%)}
+  .pill[hidden]{display:none}
+  .pill button{display:inline-flex;align-items:center;gap:7px;background:none;border:0;color:var(--paper);font:500 14px "Inter Tight",sans-serif;padding:8px 12px;border-radius:999px;cursor:pointer;white-space:nowrap}
+  .pill button:hover{background:rgba(255,255,255,.1)}
+  .pill .pill__sep{width:1px;height:18px;background:rgba(255,255,255,.15);margin:0 2px}
+  .pill form{display:flex;align-items:center}
+  .pill input{width:260px;background:none;border:0;outline:none;color:var(--paper);font:400 14px "Inter Tight",sans-serif;padding:8px 12px}
+  .pill input::placeholder{color:rgba(255,255,255,.6)}
+
+  /* "/" palette */
+  .palette{position:fixed;inset:0;z-index:50;background:var(--noise),linear-gradient(160deg,rgba(15,34,58,.97) 40%,rgba(47,70,111,.97) 140%);background-size:200px 200px,auto;color:#fff;display:flex;align-items:center;justify-content:center;padding:24px}
+  .palette[hidden]{display:none}
+  .palette__box{width:min(760px,100%)}
+  .palette__top{display:flex;justify-content:space-between;font:400 12px "IBM Plex Mono",monospace;color:rgba(255,255,255,.55);margin-bottom:22px;letter-spacing:.04em}
+  .palette ul{list-style:none}
+  .palette__close{display:none;background:none;border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:999px;padding:5px 12px;font:400 12px 'IBM Plex Mono',monospace;cursor:pointer}
+  @media (pointer:coarse){ .palette__close{display:inline-block} }
+  .palette li{display:flex;align-items:center;gap:18px;font-size:clamp(34px,5.2vw,62px);font-weight:300;letter-spacing:-.045em;line-height:1.12;color:rgba(255,255,255,.28);cursor:pointer;transition:color .15s}
+  .palette li .dot{width:10px;height:10px;border-color:currentColor;opacity:0;transition:opacity .15s}
+  .palette li.on{color:#fff;font-weight:500}
+  .palette li.on .dot{opacity:1}
+  .palette li.on::after{content:"↵";font:400 14px "IBM Plex Mono",monospace;color:rgba(255,255,255,.55);margin-left:auto}
+
+  /* Shortcuts dialog */
+  .modal{position:fixed;inset:0;z-index:60;background:rgba(24,26,77,.35);display:grid;place-items:center;padding:20px}
+  .modal[hidden]{display:none}
+  .modal .keys{width:min(420px,100%);padding:22px}
+  .modal .ttl{font-size:20px;font-weight:600;letter-spacing:-.02em;color:var(--ink);margin-top:6px}
+  .modal button{margin-top:18px}
+
+  .toast button{background:none;border:0;color:var(--c-sky);font:600 14px "Inter Tight",sans-serif;margin-left:12px;cursor:pointer}
+  .toast.show{pointer-events:auto}
+
+  .side__logo .short{display:none}
+  .side__btns{display:flex;flex-direction:column;gap:6px}
+  .sheet-handle{display:none}
+  @media (max-width:1280px){ .b .kbd{display:none} }
+  @media (pointer:coarse){ .b .kbd,.hint__key,.palette__top span:nth-child(2){display:none} }
+  @media (max-width:1100px){
+    .app{grid-template-columns:72px minmax(0,1fr) 340px}
+    .side{padding:22px 12px;align-items:center}
+    .side__label,.side__doc,.side__keys span:first-child,.side__logo .full{display:none}
+    .side__logo .short{display:inline;font-size:26px}
+    .side__keys{justify-content:center;width:44px;height:44px;padding:0}
+    .side__keys .mono{font-size:15px}
+    .side__top{align-items:center}
+    .side__back{align-self:center;width:44px;height:44px;padding:0;justify-content:center}
+    .side__back .txt{display:none}
+    .sheet h2 .num{display:none}
+  }
+  @media (max-width:820px){
+    .app{grid-template-columns:1fr}
+    .side{position:sticky;top:0;z-index:15;height:auto;flex-direction:row;align-items:center;justify-content:space-between;padding:10px 14px}
+    .side__top{flex-direction:row;align-items:center;gap:12px;margin:0}
+    .side__back{width:40px;height:40px}
+    .side__logo .short{display:none} .side__logo .full{display:inline;font-size:18px}
+    .side__spacer{display:none}
+    .side__btns{flex-direction:row}
+    .side__keys{width:40px;height:40px}
+    .doc-col{padding:18px 14px calc(var(--sheet-h, 90px) + 40px)}
+    .sheet{padding:28px 22px 40px}
+    .sheet p,.sheet li{font-size:17px}
+    .sheet [data-pid]{scroll-margin-top:80px}
+    .sheet [data-pid].active::before{left:-12px}
+    /* Co-author panel becomes a bottom sheet */
+    .panel{position:fixed;left:0;right:0;bottom:0;top:auto;z-index:20;height:auto;max-height:min(52vh,560px);padding:0 10px 10px;gap:8px;
+      background:linear-gradient(to top,var(--app) 70%,rgba(244,244,247,0));padding-top:16px}
+    .sheet-handle{display:flex;align-items:center;justify-content:space-between;width:100%;color:#fff;border:0;border-radius:10px;padding:14px 16px;font:500 15px "Inter Tight",sans-serif;cursor:pointer;flex:none}
+    .sheet-handle .lbl{color:rgba(255,255,255,.7)}
+    .sheet-handle .chev{transition:transform .2s}
+    .panel.expanded .sheet-handle{border-radius:10px 10px 0 0;padding-bottom:4px}
+    .panel.expanded .sheet-handle .chev{transform:rotate(180deg)}
+    .panel.expanded .card{border-radius:0 0 10px 10px;margin-top:-8px;padding-top:8px}
+    .panel:not(.expanded) > :not(.sheet-handle){display:none}
+    .panel .keys,.panel .proto,.panel .tip{display:none}
+    .panel .card > .lbl:first-child{display:none}
+    .num{font-size:56px}
+    .numrow{margin-top:4px}
+    .card{padding:16px 16px 18px}
+    .pill{max-width:calc(100vw - 16px);overflow-x:auto}
+    .toast{bottom:auto;top:70px}
+  }
+</style>
+</head>
+<body id="top">
+<div id="intro">
+
+<!-- Start screen -->
+<div class="hero">
+<header>
+  <div class="ticker grain" aria-hidden="true">
+    <div class="ticker__track" id="ticker"></div>
+  </div>
+
+  <div class="wordmark-wrap" id="wordmarkWrap">
+    <h1 class="wordmark wide grain-text" id="wordmark">Blaze</h1>
+  </div>
+
+  <nav class="nav" aria-label="Main">
+    <div class="nav__flow">
+      <span><span class="n mono">01</span>Write</span>
+      <span><span class="n mono">02</span>Review</span>
+      <span><span class="n mono">03</span>Refine<span class="badge mono">AI</span></span>
+    </div>
+    <div class="nav__center">AI Co-writing Editor</div>
+    <a class="nav__right" href="#editor">
+      <span class="cta">Start writing</span>
+      <span class="cta-arrow" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 10h13M11 4.5 16.5 10 11 15.5" stroke="#0F223A" stroke-width="1.8"/></svg>
+      </span>
+    </a>
+  </nav>
+</header>
+
+  <!-- What Blaze does, in three parts that come and go -->
+  <section class="story" id="story" aria-label="What Blaze does">
+    <div class="part fade" data-part="1">
+      <span class="part__tag">Write</span>
+      <p class="part__text grain-text">Write the documents that matter, right in your browser.</p>
+      <p class="part__sub">Proposals, plans, policies. Plain Markdown, nothing to install.</p>
+    </div>
+    <div class="part fade" data-part="2">
+      <span class="part__tag">Review</span>
+      <p class="part__text grain-text">Select any sentence and Blaze suggests a clearer version.</p>
+      <p class="part__sub">Every suggestion shows up as a diff, word by word, right in your text.</p>
+    </div>
+    <div class="part fade" data-part="3">
+      <span class="part__tag">Decide</span>
+      <p class="part__text grain-text">You keep what works and drop the rest.</p>
+      <p class="part__sub">Nothing changes until you accept it. The AI suggests, you decide.</p>
+      <a class="btn-outline fade" id="startBtn" href="#editor">
+        Open Blaze
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M3 10h13M11 4.5 16.5 10 11 15.5" stroke="#0F223A" stroke-width="1.8"/></svg>
+      </a>
+      <p class="by mono fade" id="byline">by María Sol Gosende</p>
+    </div>
+    <button class="skip" id="skip" type="button">Skip →</button>
+  </section>
+</div>
+</div><!-- /intro -->
+
+<!-- ===================== Editor ===================== -->
+<div class="app" id="app" hidden>
+  <aside class="side">
+    <div class="side__top">
+      <a class="side__back" href="#intro" aria-label="Back to the start screen"><span class="arrow" aria-hidden="true">←</span><span class="txt">Back</span></a>
+      <a class="side__logo wide" href="#intro" aria-label="Blaze — back to the start"><span class="full">BLAZE</span><span class="short">B</span></a>
+    </div>
+    <p class="side__label mono">01 · Document</p>
+    <div class="side__doc">AI rollout plan<span class="mono">Bluefield · draft.md</span></div>
+    <div class="side__spacer"></div>
+    <div class="side__btns">
+      <button class="side__keys" id="cmdBtn" type="button"><span>Commands</span><span class="mono">/</span></button>
+      <button class="side__keys" id="keysBtn" type="button"><span>Shortcuts</span><span class="mono">?</span></button>
+    </div>
+  </aside>
+
+  <section class="doc-col">
+    <div class="doc-top mono"><span>02 · Write</span><span>Markdown</span></div>
+    <div class="hint" id="hint"><i></i>Select any sentence to ask for a rewrite <span class="hint__key">or press <kbd>/</kbd></span></div>
+
+    <article class="sheet" id="sheet">
+      <p class="sheet__meta mono">ai-rollout-plan.md</p>
+      <h1>AI rollout plan — Bluefield support team</h1>
+
+      <h2><span class="num">01</span>Why now</h2>
+      <p data-pid="why"></p>
+
+      <h2><span class="num">02</span>What we're proposing</h2>
+      <ul>
+        <li>An AI assistant that drafts answers for the most common tickets, which an agent always reviews before sending.</li>
+        <li>A shared knowledge base so the assistant and the team are working from the same information.</li>
+        <li>Weekly reviews of what the assistant got wrong so we can actually improve it over time.</li>
+      </ul>
+
+      <h2><span class="num">03</span>How we'll keep it safe</h2>
+      <p data-pid="safe"></p>
+
+      <h2><span class="num">04</span>Success metrics</h2>
+      <p data-pid="metrics"></p>
+    </article>
+  </section>
+
+  <aside class="panel" id="panel" aria-live="polite"></aside>
+</div>
+
+<div class="pill" id="pill" hidden role="toolbar" aria-label="Ask Blaze"></div>
+<div class="pop" id="pop" hidden>
+  <button class="k" data-pop="keep" type="button">✓ Keep</button>
+  <button class="d" data-pop="drop" type="button">✕ Discard</button>
+</div>
+
+<div class="palette" id="palette" hidden>
+  <div class="palette__box">
+    <div class="palette__top"><span id="paletteCtx">/ commands</span><span>↑ ↓ to move · ↵ to run · esc to close</span><button class="palette__close" id="paletteClose" type="button" aria-label="Close">Close ✕</button></div>
+    <ul id="paletteList"></ul>
+  </div>
+</div>
+
+<div class="modal" id="keysModal" hidden>
+  <div class="keys">
+    <p class="lbl">Keyboard</p>
+    <p class="ttl">Shortcuts</p>
+    <dl>
+      <dt><span class="kbd">/</span></dt><dd>Command palette</dd>
+      <dt><span class="kbd">⌘ ↵</span></dt><dd>Accept all changes</dd>
+      <dt><span class="kbd">Esc</span></dt><dd>Reject the suggestion</dd>
+      <dt><span class="kbd">⌘ Z</span></dt><dd>Undo the last applied suggestion</dd>
+      <dt><span class="kbd">Click</span></dt><dd>A change in the text to keep or discard it</dd>
+    </dl>
+    <button class="b b--primary" style="background:var(--blue);color:#fff" id="keysClose" type="button">Got it</button>
+  </div>
+</div>
+
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(() => {
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Ticker ---------- */
+  document.getElementById('ticker').innerHTML = Array(24).fill('<span>BLAZE</span><span class="sep" aria-hidden="true"></span>').join('');
+
+  /* ---------- Wordmark: fit to the full width ---------- */
+  const wrap = document.getElementById('wordmarkWrap');
+  const mark = document.getElementById('wordmark');
+  function fitWordmark() {
+    if (!wrap.clientWidth) return;
+    mark.style.fontSize = '200px';
+    mark.style.fontSize = (200 * (wrap.clientWidth - 40) / mark.offsetWidth) + 'px';
+  }
+  let resizeTimer;
+  window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(fitWordmark, 150); });
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(fitWordmark);
+  fitWordmark();
+
+  /* ---------- The story: three parts, one at a time ---------- */
+  const part = (n) => document.querySelector(`[data-part="${n}"]`);
+  const startBtn = document.getElementById('startBtn'), byline = document.getElementById('byline');
+  const skipBtn = document.getElementById('skip');
+  let timers = [];
+  const at = (ms, fn) => timers.push(setTimeout(fn, ms));
+  const show = (n) => { part(n).classList.remove('out'); part(n).classList.add('in'); };
+  const hide = (n) => part(n).classList.replace('in', 'out');
+
+  function finish() {
+    timers.forEach(clearTimeout); timers = [];
+    [1, 2].forEach((n) => part(n).classList.remove('in', 'out'));
+    show(3); startBtn.classList.add('in'); byline.classList.add('in'); skipBtn.hidden = true;
+  }
+  function play() {
+    fitWordmark();
+    timers.forEach(clearTimeout); timers = [];
+    document.querySelectorAll('.part, #startBtn, #byline').forEach((el) => el.classList.remove('in', 'out'));
+    skipBtn.hidden = false;
+    if (reduceMotion) return finish();
+    at(300,   () => show(1));
+    at(3600,  () => hide(1));
+    at(4500,  () => show(2));
+    at(7800,  () => hide(2));
+    at(8700,  () => show(3));
+    at(10000, () => startBtn.classList.add('in'));
+    at(10600, () => { byline.classList.add('in'); skipBtn.hidden = true; });
+  }
+  skipBtn.addEventListener('click', finish);
+
+  // Replays every time the start screen is opened
+  window.BlazeIntro = { play, stop: () => { timers.forEach(clearTimeout); timers = []; } };
+})();
+</script>
+<script>
+(() => {
+  /* ---------------------------------------------------------
+     Blaze editor prototype.
+     Suggestions are pre-written so the review flow can be tried
+     without a model. The diff is computed here, word by word,
+     the same way the real app does it in the browser.
+     --------------------------------------------------------- */
+  const $ = (s) => document.querySelector(s);
+  const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const isMac = /Mac|iPhone|iPad/.test(navigator.platform);
+
+  const ACTIONS = {
+    rewrite:    { label: 'Rewrite',            color: 'var(--c-violet)' },
+    shorter:    { label: 'Shorter',            color: 'var(--c-orange)' },
+    formal:     { label: 'More formal',        color: 'var(--c-green)' },
+    warmer:     { label: 'Warmer',             color: 'var(--c-pink)' },
+    grammar:    { label: 'Fix grammar',        color: 'var(--c-petrol)' },
+    keep:       { label: 'Keep my wording',    color: 'var(--c-rose)' },
+    measurable: { label: 'Make it measurable', color: 'var(--c-coral)' }
+  };
+
+  const PARAS = {
+    why: {
+      title: 'Why now',
+      text: "Right now the support team basically spends most of their day answering the same questions over and over again, which means that a lot of the time they don't actually get to the harder tickets until the end of the day and some customers end up waiting way longer than they should.",
+      v: {
+        shorter: ["The support team spends most of the day answering the same questions, so harder tickets wait until the end of the day and some customers wait longer than they should.", 'Cut the filler ("basically", "actually", "a lot of the time") and kept your point intact.'],
+        formal:  ["The support team currently spends most of its day answering repetitive questions. As a result, complex tickets are often deferred until the end of the day, and some customers experience unnecessary delays.", 'Split the run-on sentence and replaced casual phrasing with neutral, precise wording.'],
+        warmer:  ["Our support team spends most of the day answering the same questions again and again. That leaves the harder tickets until late in the day, and some customers end up waiting longer than they deserve.", 'Made it about "our" team and the customers\' experience, without adding new claims.'],
+        rewrite: ["Most of the support team's day goes to answering the same questions. Harder tickets get pushed to the end of the day, and some customers wait far longer than they should.", 'Led with the problem and broke it into two clear sentences.'],
+        grammar: ["Right now, the support team spends most of their day answering the same questions over and over, which means they often don't get to the harder tickets until the end of the day, and some customers end up waiting longer than they should.", 'Fixed punctuation and removed redundancy; your wording stays.'],
+        keep:    ["Right now the support team spends most of their day answering the same questions over and over, so they often don't get to the harder tickets until the end of the day and some customers wait longer than they should.", 'Smallest possible edit: trimmed filler words only.']
+      }
+    },
+    safe: {
+      title: "How we'll keep it safe",
+      text: "Every answer the assistant writes is reviewed by a person before it goes out. We are going to log every suggestion and whether it was accepted, so we can audit it later if we need to, and nothing is sent automatically, ever.",
+      v: {
+        shorter: ["A person reviews every answer before it goes out. We log every suggestion and whether it was accepted, so we can audit it later. Nothing is sent automatically.", 'Active voice and three short sentences, same guarantees.'],
+        formal:  ["A team member reviews every response before it is sent. All suggestions are logged along with whether they were accepted, enabling later audits. No response is ever sent automatically.", 'Neutral, policy-style wording suited to a document others will sign off.'],
+        warmer:  ["A real person reviews every answer before it reaches a customer. We'll keep a log of every suggestion and whether we used it, so we can always look back, and nothing ever goes out on its own.", 'Puts the people first and softens the tone, without changing the commitments.'],
+        rewrite: ["A person reviews every answer before it goes out, and nothing is sent automatically. We log each suggestion and whether it was accepted, so every decision can be audited.", 'Put the two strongest guarantees together, up front.'],
+        grammar: ["Every answer the assistant writes is reviewed by a person before it goes out. We will log every suggestion and whether it was accepted, so we can audit it later if needed, and nothing is ever sent automatically.", 'Tightened "we are going to" and fixed the trailing "ever".'],
+        keep:    ["Every answer the assistant writes is reviewed by a person before it goes out. We log every suggestion and whether it was accepted, so we can audit it later, and nothing is ever sent automatically.", 'Smallest possible edit: trimmed filler words only.']
+      }
+    },
+    metrics: {
+      title: 'Success metrics',
+      text: "We'll know it's working when tickets get answered faster.",
+      v: {
+        measurable: ["We'll know it's working when median first-response time drops by [X]% within [N] weeks, while customer satisfaction stays at or above [target].", "\"Faster\" can't be checked. Added a measurable target and left the numbers for you, so nothing is made up."],
+        shorter: ["It's working when tickets get answered faster.", 'Removed the lead-in.'],
+        formal:  ["Success will be measured by a reduction in ticket response times.", 'Neutral wording; still not measurable — try “Make it measurable”.'],
+        warmer:  ["We'll know it's working when customers hear back from us sooner.", 'Framed around what customers feel.'],
+        grammar: ["We'll know it's working when tickets are answered faster.", 'Small grammar fix.'],
+        keep:    ["We'll know it's working when tickets are answered faster.", 'Smallest possible edit.']
+      }
+    }
+  };
+  PARAS.metrics.v.rewrite = PARAS.metrics.v.measurable;
+
+  const current = Object.fromEntries(Object.entries(PARAS).map(([k, p]) => [k, p.text]));
+  const paraEl = (pid) => document.querySelector(`[data-pid="${pid}"]`);
+  const renderPlain = (pid) => { paraEl(pid).textContent = current[pid]; };
+  Object.keys(PARAS).forEach(renderPlain);
+
+  /* ---------- Word diff (LCS) ---------- */
+  function diffWords(a, b) {
+    const A = a.split(/\s+/).filter(Boolean), B = b.split(/\s+/).filter(Boolean);
+    const n = A.length, m = B.length;
+    const dp = Array.from({ length: n + 1 }, () => new Uint16Array(m + 1));
+    for (let i = n - 1; i >= 0; i--)
+      for (let j = m - 1; j >= 0; j--)
+        dp[i][j] = A[i] === B[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+
+    const ops = [];
+    const push = (t, w) => { const last = ops[ops.length - 1]; if (last && last.t === t) last.w.push(w); else ops.push({ t, w: [w] }); };
+    let i = 0, j = 0;
+    while (i < n && j < m) {
+      if (A[i] === B[j]) { push('eq', A[i]); i++; j++; }
+      else if (dp[i + 1][j] >= dp[i][j + 1]) push('del', A[i++]);
+      else push('ins', B[j++]);
+    }
+    while (i < n) push('del', A[i++]);
+    while (j < m) push('ins', B[j++]);
+
+    // Group adjacent deletions/insertions into one change ("hunk")
+    let segs = [], h = null;
+    for (const op of ops) {
+      if (op.t === 'eq') { h = null; segs.push({ eq: op.w }); }
+      else { if (!h) { h = { del: [], ins: [] }; segs.push({ hunk: h }); } h[op.t].push(...op.w); }
+    }
+    // Merge two changes separated by a single unchanged word: easier to read
+    for (let k = 1; k < segs.length - 1; k++) {
+      const a1 = segs[k - 1], mid = segs[k], b1 = segs[k + 1];
+      if (a1.hunk && mid.eq && mid.eq.length === 1 && b1.hunk) {
+        a1.hunk.del.push(mid.eq[0], ...b1.hunk.del);
+        a1.hunk.ins.push(mid.eq[0], ...b1.hunk.ins);
+        segs.splice(k, 2); k--;
+      }
+    }
+    return segs.map((s) => s.hunk ? { hunk: { del: s.hunk.del.join(' '), ins: s.hunk.ins.join(' ') } } : { eq: s.eq.join(' ') });
+  }
+
+  function applyDecisions(segs, dec) {
+    let hi = 0;
+    return segs.map((s) => {
+      if (s.eq != null) return s.eq;
+      return dec[hi++] === 'keep' ? s.hunk.ins : s.hunk.del;
+    }).filter(Boolean).join(' ');
+  }
+
+  /* ---------- State ---------- */
+  const S = { mode: 'empty', pid: null, iters: [], cur: 0, segs: [], dec: [], timer: null, queue: [], queued: false, undo: [] };
+  const hunkCount = () => S.segs.filter((s) => s.hunk).length;
+  const pending = () => S.dec.filter((d) => d == null).length;
+
+  const panel = $('#panel'), hint = $('#hint'), pill = $('#pill'), pop = $('#pop');
+  const palette = $('#palette'), paletteList = $('#paletteList');
+  let lastPid = 'why', openHunk = null;
+
+  function setActive(pid, cls) {
+    document.querySelectorAll('[data-pid]').forEach((el) => el.classList.remove('active', 'thinking'));
+    if (pid) paraEl(pid).classList.add(...cls);
+  }
+
+  /* ---------- Asking for a suggestion ---------- */
+  function ask(pid, key, custom) {
+    hidePill(); hidePop();
+    if (!PARAS[pid]) { toast('In this prototype, try “Why now”, “How we’ll keep it safe” or “Success metrics”.'); return; }
+    const refining = (S.mode === 'review' || S.mode === 'thinking') && S.pid === pid;
+    if (S.mode !== 'empty' && !refining) { renderPlain(S.pid); toast('Previous suggestion discarded'); }
+    if (!refining) S.iters = [];
+    clearTimeout(S.timer);
+    if (!S.queued && pid !== 'metrics') { S.queue = ['metrics']; S.queued = true; }
+
+    const v = PARAS[pid].v[key] || PARAS[pid].v.rewrite;
+    const label = custom ? `“${custom}”` : ACTIONS[key].label;
+    const why = custom ? `You asked: <em>${esc(custom)}</em>. ${v[1]}` : esc(v[1]);
+
+    lastPid = pid;
+    S.pid = pid; S.mode = 'thinking'; S.thinkingLabel = label;
+    hint.classList.add('gone');
+    setActive(pid, ['active', 'thinking']);
+    renderPanel();
+    const r = paraEl(pid).getBoundingClientRect(), phone = innerWidth <= 820;
+    if (phone) paraEl(pid).scrollIntoView({ block: 'start', behavior: 'smooth' });
+    else if (r.top < 0 || r.bottom > innerHeight) paraEl(pid).scrollIntoView({ block: 'center', behavior: 'smooth' });
+    S.timer = setTimeout(() => {
+      S.iters.push({ key, label, text: v[0], why });
+      showIteration(S.iters.length - 1);
+    }, 900 + Math.random() * 600);
+  }
+
+  function cancelThinking() {
+    clearTimeout(S.timer);
+    if (S.iters.length) showIteration(S.cur);
+    else { S.mode = 'empty'; renderPlain(S.pid); setActive(null); renderPanel(); }
+  }
+
+  function showIteration(i) {
+    S.cur = i; S.mode = 'review';
+    S.segs = diffWords(current[S.pid], S.iters[i].text);
+    S.dec = Array(hunkCount()).fill(null);
+    setActive(S.pid, ['active']);
+    renderDiff(); renderPanel();
+  }
+
+  /* ---------- Inline diff ---------- */
+  function renderDiff() {
+    let hi = 0;
+    paraEl(S.pid).innerHTML = S.segs.map((s) => {
+      if (s.eq != null) return esc(s.eq);
+      const i = hi++, d = S.dec[i], { del, ins } = s.hunk;
+      if (d === 'keep') return `<span class="hunk kept" data-h="${i}">${ins ? `<ins>${esc(ins)}</ins>` : '<span class="mark"></span>'}</span>`;
+      if (d === 'drop') return `<span class="hunk dropped" data-h="${i}">${del ? esc(del) : '<span class="mark"></span>'}</span>`;
+      return `<span class="hunk" data-h="${i}" title="Click to keep or discard">${del ? `<del>${esc(del)}</del>` : ''}${del && ins ? ' ' : ''}${ins ? `<ins>${esc(ins)}</ins>` : ''}</span>`;
+    }).join(' ');
+  }
+
+  $('#sheet').addEventListener('click', (e) => {
+    const h = e.target.closest('.hunk');
+    if (!h || S.mode !== 'review') return;
+    e.stopPropagation();
+    hidePill();
+    document.querySelectorAll('.hunk.open').forEach((x) => x.classList.remove('open'));
+    h.classList.add('open');
+    openHunk = +h.dataset.h;
+    const r = h.getBoundingClientRect();
+    pop.hidden = false;
+    pop.style.left = Math.max(8, Math.min(r.left, innerWidth - pop.offsetWidth - 8)) + 'px';
+    pop.style.top = (r.bottom + 8) + 'px';
+  });
+  pop.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-pop]');
+    if (!b || openHunk == null) return;
+    S.dec[openHunk] = b.dataset.pop;
+    hidePop(); renderDiff(); renderPanel();
+  });
+  function hidePop() { pop.hidden = true; openHunk = null; document.querySelectorAll('.hunk.open').forEach((x) => x.classList.remove('open')); }
+
+  /* ---------- Accept / reject: one transaction ---------- */
+  function apply(dec) {
+    const kept = dec.filter((d) => d === 'keep').length;
+    const pid = S.pid;
+    S.undo.push({ pid, text: current[pid] });
+    current[pid] = applyDecisions(S.segs, dec);
+    finish(pid);
+    toast(`Applied ${kept} change${kept === 1 ? '' : 's'}`, true);
+  }
+  function acceptAll() { if (S.mode === 'review') apply(S.dec.map(() => 'keep')); }
+  function applyDecided() { if (S.mode === 'review') apply(S.dec.map((d) => d || 'drop')); }
+  function rejectAll() { if (S.mode !== 'review') return; const pid = S.pid; finish(pid); toast('Suggestion rejected — your text is unchanged'); }
+  function finish(pid) {
+    S.mode = 'empty'; S.iters = [];
+    if (pid === 'metrics') S.queue = [];
+    renderPlain(pid); setActive(null); hidePop(); renderPanel();
+  }
+  function undo() {
+    const last = S.undo.pop();
+    if (!last) return;
+    if (S.mode !== 'empty' && S.pid === last.pid) { clearTimeout(S.timer); S.mode = 'empty'; setActive(null); }
+    current[last.pid] = last.text;
+    renderPlain(last.pid); renderPanel();
+    toast('Undone');
+  }
+
+  /* ---------- Co-author panel ---------- */
+  const pad = (n) => String(n).padStart(2, '0');
+  const dot = () => `<span class="dot"></span>`;
+  const kbd = (s) => `<span class="kbd">${s}</span>`;
+  const mod = isMac ? '⌘' : 'Ctrl';
+
+  function nextCard(disabled) {
+    if (!S.queue.length || (S.mode !== 'empty' && S.pid === 'metrics')) return '';
+    return `<div class="next"><div><span class="lbl">Up next</span><b>Success metrics</b> · Make the goal measurable</div>
+      <button type="button" data-act="next" ${disabled ? 'disabled' : ''}>${disabled ? 'After this one' : 'Review'}</button></div>`;
+  }
+
+  function handle() {
+    const txt = S.mode === 'empty' ? 'Co-author · nothing to review'
+      : S.mode === 'thinking' ? 'Thinking…'
+      : `${pending()} change${pending() === 1 ? '' : 's'} to review`;
+    return `<button class="sheet-handle" type="button" data-act="sheet"><span>${txt}</span><span class="chev">▴</span></button>`;
+  }
+  function renderPanel() {
+    if (S.mode !== S.lastMode) { panel.classList.toggle('expanded', S.mode !== 'empty'); S.lastMode = S.mode; }
+    panel.innerHTML = handle() + panelBody();
+    document.documentElement.style.setProperty('--sheet-h', panel.offsetHeight + 'px');
+  }
+  function panelBody() {
+    if (S.mode === 'empty') {
+      return `
+        ${nextCard(false)}
+        <div class="card">
+          <p class="lbl">03 · Co-author</p>
+          <div class="num">00</div>
+          <p class="ttl">Nothing to review yet</p>
+          <p class="sub">Select text in the document and pick an action, or press ${kbd('/')}. Suggestions appear inline as a diff, and nothing changes until you accept.</p>
+          <div class="sep"></div>
+          <p class="lbl">Try one</p>
+          <div class="tries">
+            <button class="try" type="button" data-try="why:shorter">${dot('shorter')}Make “Why now” shorter</button>
+            <button class="try" type="button" data-try="metrics:measurable">${dot('measurable')}Make the success metric measurable</button>
+            <button class="try" type="button" data-try="safe:formal">${dot('formal')}Make the safety section more formal</button>
+          </div>
+        </div>
+        <div class="keys"><p class="lbl">Shortcuts</p><dl>
+          <dt>${kbd('/')}</dt><dd>Command palette</dd>
+          <dt>${kbd(mod + ' ↵')}</dt><dd>Accept all</dd>
+          <dt>${kbd('Esc')}</dt><dd>Reject all</dd>
+          <dt>${kbd(mod + ' Z')}</dt><dd>Undo</dd></dl></div>
+        <p class="proto mono">Prototype · suggestions are pre-written</p>`;
+    }
+
+    const title = PARAS[S.pid].title;
+    if (S.mode === 'thinking') {
+      return `
+        <div class="card">
+          <p class="lbl">03 · ${esc(title)}</p>
+          <p class="think">Thinking<span class="dots"></span></p>
+          <p class="sub">${S.thinkingLabel} — only this paragraph, nothing else in the document.</p>
+          <div class="acts" style="grid-template-columns:auto"><button class="b b--ghost" type="button" data-act="cancel">Cancel</button></div>
+        </div>${nextCard(true)}`;
+    }
+
+    // review
+    const it = S.iters[S.cur], total = hunkCount(), left = pending();
+    const decided = total - left, kept = S.dec.filter((d) => d === 'keep').length;
+    const hist = S.iters.map((x, i) => `<button type="button" class="${i === S.cur ? 'on' : ''}" data-iter="${i}">${x.label}</button>`).join('<span>→</span>');
+    const chips = ['formal', 'warmer', 'keep', 'shorter', ...(S.pid === 'metrics' ? ['measurable'] : [])]
+      .filter((k) => k !== it.key)
+      .map((k) => `<button class="chip" type="button" data-refine="${k}">${dot(k)}${ACTIONS[k].label}</button>`).join('');
+
+    return `
+      <div class="card">
+        <p class="lbl">03 · Suggestion · ${esc(title)}</p>
+        ${total === 0 ? `<p class="ttl" style="margin-top:14px">No changes suggested</p><p class="sub">This already reads well for “${it.label}”.</p>` : `
+        <div class="numrow"><div class="num">${pad(left)}</div><p>${left === 1 ? 'change' : 'changes'} left<br>to review · ${total} total</p></div>`}
+        <div class="hist">${hist}</div>
+        <p class="why">${it.why}</p>
+        <div class="acts">
+          <button class="b b--primary" type="button" data-act="accept" ${total ? '' : 'disabled'}>Accept all ${kbd(mod + '↵')}</button>
+          <button class="b b--ghost" type="button" data-act="reject">${total ? 'Reject all' : 'Close'} ${kbd('Esc')}</button>
+        </div>
+        ${decided ? `<button class="b b--apply" type="button" data-act="apply">Apply · ${kept} kept, ${total - kept} dropped</button>` : ''}
+        <div class="sep"></div>
+        <p class="lbl">Refine this suggestion</p>
+        <div class="chips">${chips}</div>
+        <form class="refine" id="refineForm"><input name="q" autocomplete="off" placeholder="Or tell Blaze what to change…"><button type="submit" aria-label="Send">↵</button></form>
+      </div>
+      ${nextCard(true)}
+      <p class="tip">Click any change in the text to keep or discard it.</p>`;
+  }
+
+  panel.addEventListener('click', (e) => {
+    const t = e.target.closest('button');
+    if (!t) return;
+    if (t.dataset.try) { const [pid, key] = t.dataset.try.split(':'); ask(pid, key); }
+    else if (t.dataset.refine) ask(S.pid, t.dataset.refine);
+    else if (t.dataset.iter) showIteration(+t.dataset.iter);
+    else if (t.dataset.act === 'accept') acceptAll();
+    else if (t.dataset.act === 'reject') rejectAll();
+    else if (t.dataset.act === 'apply') applyDecided();
+    else if (t.dataset.act === 'cancel') cancelThinking();
+    else if (t.dataset.act === 'next') ask('metrics', 'measurable');
+    else if (t.dataset.act === 'sheet') { panel.classList.toggle('expanded'); document.documentElement.style.setProperty('--sheet-h', panel.offsetHeight + 'px'); }
+  });
+  panel.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const q = e.target.q.value.trim();
+    if (q) ask(S.pid, keyFor(q, S.pid), q);
+  });
+
+  // Free text → the closest pre-written version (prototype only)
+  function keyFor(q, pid) {
+    q = q.toLowerCase();
+    if (/short|concise|brief|cut/.test(q)) return 'shorter';
+    if (/formal|professional/.test(q)) return 'formal';
+    if (/warm|friendly|human|kind/.test(q)) return 'warmer';
+    if (/grammar|typo|spell|punctuat/.test(q)) return 'grammar';
+    if (/measur|metric|number|target|specific/.test(q) && PARAS[pid].v.measurable) return 'measurable';
+    if (/wording|minimal|light/.test(q)) return 'keep';
+    return 'rewrite';
+  }
+
+  /* ---------- Floating pill over the selection ---------- */
+  function pidFromNode(n) {
+    const el = (n && n.nodeType === 3 ? n.parentElement : n);
+    const p = el && el.closest('[data-pid]');
+    return p ? p.dataset.pid : (el && el.closest('#sheet') ? 'other' : null);
+  }
+  let pillPid = null;
+
+  let pillRect = null;
+  function showPill(rect, pid) {
+    pillPid = pid; pillRect = rect;
+    pill.innerHTML = `
+      <button type="button" data-pill="ask">✦ Ask</button><span class="pill__sep"></span>
+      <button type="button" data-pill="rewrite">${dot('rewrite')}Rewrite</button>
+      <button type="button" data-pill="shorter">${dot('shorter')}Shorter</button>
+      <button type="button" data-pill="tone">${dot('formal')}Tone ▾</button>
+      <button type="button" data-pill="grammar">${dot('grammar')}Fix grammar</button>`;
+    pill.hidden = false;
+    place(rect);
+  }
+  function place(rect) {
+    const w = pill.offsetWidth;
+    const x = Math.max(w / 2 + 8, Math.min(rect.left + rect.width / 2, innerWidth - w / 2 - 8));
+    const y = rect.top - pill.offsetHeight - 10;
+    pill.style.left = x + 'px';
+    pill.style.top = (touchUI || y < 8 ? rect.bottom + 12 : y) + 'px';
+  }
+  function hidePill() { pill.hidden = true; pillPid = null; }
+
+  const touchUI = matchMedia('(pointer: coarse)').matches;
+  function checkSelection() {
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed || !sel.toString().trim()) { if (!pill.contains(document.activeElement)) hidePill(); return; }
+    const pid = pidFromNode(sel.anchorNode);
+    if (!pid || pid !== pidFromNode(sel.focusNode)) return hidePill();
+    showPill(sel.getRangeAt(0).getBoundingClientRect(), pid);
+  }
+  document.addEventListener('mouseup', (e) => {
+    if (app.hidden || touchUI || pill.contains(e.target) || pop.contains(e.target) || panel.contains(e.target)) return;
+    setTimeout(checkSelection, 0);
+  });
+  if (touchUI) {
+    let selTimer;
+    document.addEventListener('selectionchange', () => {
+      if (app.hidden || pill.contains(document.activeElement)) return;
+      clearTimeout(selTimer); selTimer = setTimeout(checkSelection, 350);
+    });
+  }
+  document.addEventListener('mousedown', (e) => {
+    if (!pill.contains(e.target) && !touchUI) hidePill();
+    if (!pop.contains(e.target) && !e.target.closest('.hunk')) hidePop();
+  });
+
+  pill.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-pill]');
+    if (!b) return;
+    const a = b.dataset.pill, rect = pill.getBoundingClientRect();
+    if (a === 'tone') {
+      pill.innerHTML = `
+        <button type="button" data-pill="formal">${dot('formal')}More formal</button>
+        <button type="button" data-pill="warmer">${dot('warmer')}Warmer</button>
+        <button type="button" data-pill="keep">${dot('keep')}Keep my wording</button>`;
+      place(pillRect || rect);
+      return;
+    }
+    if (a === 'ask') {
+      pill.innerHTML = `<form id="askForm"><input name="q" autocomplete="off" placeholder="Ask Blaze to…"><button type="submit">↵</button></form>`;
+      pill.querySelector('input').focus();
+      return;
+    }
+    const pid = pillPid; window.getSelection().removeAllRanges();
+    ask(pid === 'other' ? null : pid, a);
+  });
+  pill.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const q = e.target.q.value.trim();
+    if (!q) return;
+    const pid = pillPid; window.getSelection().removeAllRanges();
+    ask(pid === 'other' ? null : pid, keyFor(q, pid), q);
+  });
+
+  /* ---------- "/" command palette ---------- */
+  const CMDS = ['rewrite', 'shorter', 'formal', 'warmer', 'grammar', 'keep', 'measurable'];
+  let pIdx = 0, pTarget = 'why';
+  function openPalette() {
+    pTarget = S.mode !== 'empty' ? S.pid : lastPid;
+    $('#paletteCtx').textContent = `/ commands · on “${PARAS[pTarget].title}”`;
+    pIdx = 0; drawPalette(); palette.hidden = false; hidePill();
+  }
+  function drawPalette() {
+    paletteList.innerHTML = CMDS.map((k, i) => `<li class="${i === pIdx ? 'on' : ''}" data-cmd="${k}">${dot(k)}${ACTIONS[k].label}</li>`).join('');
+  }
+  paletteList.addEventListener('mousemove', (e) => { const li = e.target.closest('li'); if (li) { const i = CMDS.indexOf(li.dataset.cmd); if (i !== pIdx) { pIdx = i; drawPalette(); } } });
+  paletteList.addEventListener('click', (e) => { const li = e.target.closest('li'); if (li) { palette.hidden = true; ask(pTarget, li.dataset.cmd); } });
+  palette.addEventListener('click', (e) => { if (e.target === palette) palette.hidden = true; });
+  $('#paletteClose').addEventListener('click', () => { palette.hidden = true; });
+
+  /* ---------- Keyboard ---------- */
+  document.addEventListener('keydown', (e) => {
+    if (app.hidden) return;
+    const typing = /INPUT|TEXTAREA/.test(document.activeElement.tagName);
+    if (!palette.hidden) {
+      if (e.key === 'ArrowDown') { pIdx = (pIdx + 1) % CMDS.length; drawPalette(); e.preventDefault(); }
+      else if (e.key === 'ArrowUp') { pIdx = (pIdx - 1 + CMDS.length) % CMDS.length; drawPalette(); e.preventDefault(); }
+      else if (e.key === 'Enter') { palette.hidden = true; ask(pTarget, CMDS[pIdx]); e.preventDefault(); }
+      else if (e.key === 'Escape') palette.hidden = true;
+      return;
+    }
+    if (!keysModal.hidden) { if (e.key === 'Escape') keysModal.hidden = true; return; }
+    if (e.key === 'Escape') {
+      if (typing) { document.activeElement.blur(); hidePill(); return; }
+      if (!pill.hidden) return hidePill();
+      if (!pop.hidden) return hidePop();
+      if (S.mode === 'thinking') return cancelThinking();
+      return rejectAll();
+    }
+    if (typing) return;
+    if (e.key === '/' ) { e.preventDefault(); openPalette(); }
+    else if (e.key === '?') keysModal.hidden = false;
+    else if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); acceptAll(); }
+    else if ((e.key === 'z' || e.key === 'Z') && (e.metaKey || e.ctrlKey) && !e.shiftKey) { e.preventDefault(); undo(); }
+  });
+
+  /* ---------- Shortcuts dialog ---------- */
+  const keysModal = $('#keysModal');
+  $('#keysBtn').addEventListener('click', () => { keysModal.hidden = false; });
+  $('#cmdBtn').addEventListener('click', () => openPalette());
+  $('#keysClose').addEventListener('click', () => { keysModal.hidden = true; });
+  keysModal.addEventListener('click', (e) => { if (e.target === keysModal) keysModal.hidden = true; });
+
+  /* ---------- Toast ---------- */
+  const toastEl = $('#toast');
+  let toastTimer;
+  function toast(msg, withUndo) {
+    toastEl.innerHTML = esc(msg) + (withUndo ? '<button type="button" id="toastUndo">Undo</button>' : '');
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove('show'), withUndo ? 5000 : 2600);
+  }
+  toastEl.addEventListener('click', (e) => { if (e.target.id === 'toastUndo') { undo(); } });
+
+  /* ---------- Intro ↔ editor ---------- */
+  const app = $('#app'), intro = $('#intro');
+  function route() {
+    const editor = location.hash === '#editor';
+    intro.hidden = editor; app.hidden = !editor;
+    hidePill(); hidePop(); palette.hidden = true;
+    if (window.BlazeIntro) editor ? BlazeIntro.stop() : BlazeIntro.play();
+    window.scrollTo(0, 0);
+  }
+  window.addEventListener('hashchange', route);
+  renderPanel();
+  route();
+})();
+</script>
+</body>
+</html>

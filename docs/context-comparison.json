@@ -1,0 +1,276 @@
+{
+  "model": "anthropic/claude-sonnet-5.5",
+  "runs": 3,
+  "spentUsd": 0.051054,
+  "cases": [
+    {
+      "name": "baseline-in-context",
+      "question": "Does it use the real baseline instead of a placeholder?",
+      "passage": "We'll know it's working when tickets get answered faster.",
+      "instruction": "Make it measurable.",
+      "context": {
+        "heading": "Success metrics",
+        "before": "Our median first response is 9 hours today.",
+        "after": null
+      }
+    },
+    {
+      "name": "pronoun-in-context",
+      "question": "Does \"it\" stay correct, as \"it\" or as the knowledge base?",
+      "passage": "Honestly it's kinda out of date and people don't really trust it.",
+      "instruction": "Rewrite this so it stands on its own as a formal sentence.",
+      "context": {
+        "heading": "Shared knowledge",
+        "before": "The team keeps its answers in a shared knowledge base.",
+        "after": null
+      }
+    },
+    {
+      "name": "neighbour-not-repeated",
+      "question": "Does it avoid restating the neighbouring sentence?",
+      "passage": "We are going to log every suggestion and whether it was accepted, so we can audit it later if we need to, and nothing is sent automatically, ever.",
+      "instruction": "Make it more formal.",
+      "context": {
+        "heading": "How we'll keep it safe",
+        "before": "Every answer the assistant writes is reviewed by a person before it goes out.",
+        "after": null
+      }
+    }
+  ],
+  "records": [
+    {
+      "case": "baseline-in-context",
+      "withContext": true,
+      "run": 1,
+      "latencyMs": 3053,
+      "ok": true,
+      "passed": true,
+      "repeated": false,
+      "promptTokens": 888,
+      "costUsd": 0.002726,
+      "rewrite": "We'll know it's working when median first response time drops from 9 hours today to [X] hours by [date].",
+      "rationale": "Turned \"faster\" into a measurable target using the 9-hour baseline from context, with placeholders for the target and deadline since neither was provided."
+    },
+    {
+      "case": "baseline-in-context",
+      "withContext": true,
+      "run": 2,
+      "latencyMs": 2030,
+      "ok": true,
+      "passed": true,
+      "repeated": false,
+      "promptTokens": 888,
+      "costUsd": 0.002606,
+      "rewrite": "We'll know it's working when our median first response time drops from 9 hours to [X] hours.",
+      "rationale": "Tied the goal to the 9-hour median first response from the context and added an [X] placeholder for the target, since none was given."
+    },
+    {
+      "case": "baseline-in-context",
+      "withContext": true,
+      "run": 3,
+      "latencyMs": 1904,
+      "ok": true,
+      "passed": true,
+      "repeated": false,
+      "promptTokens": 888,
+      "costUsd": 0.002756,
+      "rewrite": "We'll know it's working when median first response time drops from 9 hours to [X] hours by [date].",
+      "rationale": "Turned the vague 'faster' into a measurable target using the 9-hour baseline from context, with placeholders for the target value and deadline, which weren't provided."
+    },
+    {
+      "case": "baseline-in-context",
+      "withContext": false,
+      "run": 1,
+      "latencyMs": 3174,
+      "ok": true,
+      "passed": false,
+      "repeated": false,
+      "promptTokens": 852,
+      "costUsd": 0.002764,
+      "rewrite": "We'll know it's working when the median first-response time on tickets drops from [X] hours to [Y] hours by [date].",
+      "rationale": "Replaced the vague \"faster\" with a measurable first-response-time target, using placeholders for the baseline, goal and deadline since the passage gives no figures."
+    },
+    {
+      "case": "baseline-in-context",
+      "withContext": false,
+      "run": 2,
+      "latencyMs": 2048,
+      "ok": true,
+      "passed": false,
+      "repeated": false,
+      "promptTokens": 852,
+      "costUsd": 0.002644,
+      "rewrite": "We'll know it's working when the median ticket response time drops from [current time] to [target time] within [timeframe].",
+      "rationale": "Replaced the vague 'faster' with a measurable target using placeholders for the baseline, goal and timeframe, since none were provided."
+    },
+    {
+      "case": "baseline-in-context",
+      "withContext": false,
+      "run": 3,
+      "latencyMs": 2729,
+      "ok": true,
+      "passed": false,
+      "repeated": false,
+      "promptTokens": 852,
+      "costUsd": 0.002754,
+      "rewrite": "We'll know it's working when the median first-response time on tickets drops from [X] hours to [Y] hours by [date].",
+      "rationale": "Replaced the vague 'answered faster' with a measurable first-response target, using placeholders for the baseline, goal and deadline since the passage gives no figures."
+    },
+    {
+      "case": "pronoun-in-context",
+      "withContext": true,
+      "run": 1,
+      "latencyMs": 1820,
+      "ok": true,
+      "passed": true,
+      "repeated": false,
+      "promptTokens": 913,
+      "costUsd": 0.002876,
+      "rewrite": "The knowledge base is outdated, and team members do not fully trust it.",
+      "rationale": "Replaced the vague pronoun 'it' with 'The knowledge base' (from context) so the sentence stands alone, and formalized the casual wording; removed 'Honestly' and 'kinda'."
+    },
+    {
+      "case": "pronoun-in-context",
+      "withContext": true,
+      "run": 2,
+      "latencyMs": 1980,
+      "ok": true,
+      "passed": true,
+      "repeated": false,
+      "promptTokens": 913,
+      "costUsd": 0.002876,
+      "rewrite": "The knowledge base is outdated, and team members do not fully trust it.",
+      "rationale": "Replaced the vague pronoun 'it' with 'The knowledge base' (from context) so the sentence stands alone, and formalized the casual wording ('Honestly', 'kinda', 'people')."
+    },
+    {
+      "case": "pronoun-in-context",
+      "withContext": true,
+      "run": 3,
+      "latencyMs": 2128,
+      "ok": true,
+      "passed": true,
+      "repeated": false,
+      "promptTokens": 913,
+      "costUsd": 0.002796,
+      "rewrite": "The knowledge base is outdated, and team members do not generally trust it.",
+      "rationale": "Replaced the pronoun 'it' with 'The knowledge base' so the sentence stands alone, and removed informal words ('Honestly', 'kinda') for a formal register."
+    },
+    {
+      "case": "pronoun-in-context",
+      "withContext": false,
+      "run": 1,
+      "latencyMs": 2022,
+      "ok": true,
+      "passed": false,
+      "repeated": false,
+      "promptTokens": 870,
+      "costUsd": 0.00274,
+      "rewrite": "The document is outdated, and as a result it is not widely trusted.",
+      "rationale": "Replaced casual phrasing with formal wording and swapped the pronoun 'it' for 'The document' so the sentence stands alone; the referent is assumed, since the passage doesn't name it."
+    },
+    {
+      "case": "pronoun-in-context",
+      "withContext": false,
+      "run": 2,
+      "latencyMs": 1987,
+      "ok": true,
+      "passed": false,
+      "repeated": false,
+      "promptTokens": 870,
+      "costUsd": 0.00264,
+      "rewrite": "The document is outdated, and consequently it is not widely trusted.",
+      "rationale": "Replaced casual wording with formal phrasing and named a subject so the sentence stands alone; 'document' is an assumed referent for 'it' and may need correcting."
+    },
+    {
+      "case": "pronoun-in-context",
+      "withContext": false,
+      "run": 3,
+      "latencyMs": 2310,
+      "ok": true,
+      "passed": false,
+      "repeated": false,
+      "promptTokens": 870,
+      "costUsd": 0.00265,
+      "rewrite": "The document is outdated, and as a result, it is not widely trusted.",
+      "rationale": "Made the tone formal and replaced the vague 'it' with 'The document' so the sentence stands alone; 'document' is an assumed referent, so verify it fits."
+    },
+    {
+      "case": "neighbour-not-repeated",
+      "withContext": true,
+      "run": 1,
+      "latencyMs": 2137,
+      "ok": true,
+      "passed": true,
+      "repeated": false,
+      "promptTokens": 931,
+      "costUsd": 0.003072,
+      "rewrite": "We will log every suggestion and whether it was accepted, so that it can be audited later if necessary, and nothing is sent automatically, ever.",
+      "rationale": "Made the register more formal by replacing \"are going to\" with \"will\" and rephrasing the audit clause; all commitments, including the no-automatic-sending guarantee, are kept."
+    },
+    {
+      "case": "neighbour-not-repeated",
+      "withContext": true,
+      "run": 2,
+      "latencyMs": 2115,
+      "ok": true,
+      "passed": true,
+      "repeated": false,
+      "promptTokens": 931,
+      "costUsd": 0.003032,
+      "rewrite": "We will log every suggestion and whether it was accepted, so that it can be audited later if necessary, and nothing is ever sent automatically.",
+      "rationale": "Made the register more formal by replacing \"are going to\" with \"will\", using \"so that it can be audited... if necessary\", and tightening the final clause; all commitments kept."
+    },
+    {
+      "case": "neighbour-not-repeated",
+      "withContext": true,
+      "run": 3,
+      "latencyMs": 2211,
+      "ok": true,
+      "passed": true,
+      "repeated": false,
+      "promptTokens": 931,
+      "costUsd": 0.003092,
+      "rewrite": "We will log every suggestion and whether it was accepted, so that it can be audited later if necessary, and nothing is ever sent automatically.",
+      "rationale": "Made the tone more formal by replacing \"going to\" with \"will\", rephrasing the audit clause, and tightening \"nothing is sent automatically, ever\"; all commitments retained."
+    },
+    {
+      "case": "neighbour-not-repeated",
+      "withContext": false,
+      "run": 1,
+      "latencyMs": 2270,
+      "ok": true,
+      "passed": true,
+      "repeated": false,
+      "promptTokens": 880,
+      "costUsd": 0.00297,
+      "rewrite": "We will log every suggestion and whether it was accepted, so that it can be audited at a later date if necessary, and nothing will ever be sent automatically.",
+      "rationale": "Made the tone more formal by replacing \"are going to\" with \"will\" and rephrasing the audit clause, while keeping both commitments (logging and no automatic sending)."
+    },
+    {
+      "case": "neighbour-not-repeated",
+      "withContext": false,
+      "run": 2,
+      "latencyMs": 3425,
+      "ok": true,
+      "passed": true,
+      "repeated": false,
+      "promptTokens": 880,
+      "costUsd": 0.00302,
+      "rewrite": "We will log every suggestion and whether it was accepted, so that it may be audited later if necessary, and nothing will be sent automatically under any circumstances.",
+      "rationale": "Replaced casual phrasing ('are going to', 'we can', 'if we need to', 'ever') with formal equivalents while keeping both the logging and no-automatic-sending commitments."
+    },
+    {
+      "case": "neighbour-not-repeated",
+      "withContext": false,
+      "run": 3,
+      "latencyMs": 1994,
+      "ok": true,
+      "passed": true,
+      "repeated": false,
+      "promptTokens": 880,
+      "costUsd": 0.00304,
+      "rewrite": "We will log every suggestion and whether it was accepted, so that it may be audited later if necessary, and nothing will be sent automatically under any circumstances.",
+      "rationale": "Made the register more formal by replacing \"are going to\" with \"will\", rephrasing the audit clause, and changing \"ever\" to \"under any circumstances\"; all commitments retained."
+    }
+  ]
+}

@@ -4,12 +4,20 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently --names web,api --kill-others-on-fail \"vite\" \"pnpm dev:server\"",
+    "dev:server": "tsx watch --env-file-if-exists=.env server/index.ts",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "test": "vitest run",
+    "preview": "vite preview",
+    "compare-models": "tsx --env-file-if-exists=.env scripts/compareModels.ts",
+    "score-models": "tsx scripts/scoreComparison.ts",
+    "compare-context": "tsx --env-file-if-exists=.env scripts/compareContext.ts"
   },
   "dependencies": {
+    "@hono/node-server": "^2.1.6",
+    "diff": "^9.0.0",
+    "hono": "^4.13.16",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },
@@ -19,12 +27,15 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.2",
+    "concurrently": "^10.0.6",
     "eslint": "^10.14.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.7",
     "globals": "^17.14.0",
+    "tsx": "^4.23.15",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.72.1",
-    "vite": "^8.3.5"
+    "vite": "^8.3.5",
+    "vitest": "^5.1.0"
   }
 }
