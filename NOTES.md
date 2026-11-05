@@ -116,6 +116,9 @@ Test names are the names the tests will have. Update the status when a row is pr
 | S52 | Under 1024 px the card stacks below the document and scrolls into view when a suggestion arrives | `e2e/responsive.spec.ts`: "the card sits below the document, and the sidebar is a bar on top", "when a suggestion arrives, the card scrolls into view below the bar" | done |
 | S53 | The palette header doesn't wrap into a narrow column | `e2e/responsive.spec.ts`: "the palette header stays readable and the list reachable" | done |
 | S54 | The selection pill can always be reached, even when the selected text is off-screen | `src/hooks/useSelectionPill.ts`; `e2e/responsive.spec.ts`: "the pill stays reachable when the selected text is out of view" | done |
+| S55 | On narrow screens, a "Try a suggestion" button by the hint scrolls to the prompts when nothing is being reviewed | `src/components/EditorPane/`; `e2e/responsive.spec.ts`: "it sits by the hint and takes you to the prompts", "it goes away during a review and comes back after, even once the hint is gone" | done |
+| S56 | On narrow screens, the card scrolls into view as soon as a request starts, so Cancel is visible | `src/hooks/useCardIntoView.ts`; `e2e/responsive.spec.ts`: "as soon as a request starts loading, Cancel is in view below the bar", "while a refine is loading, its Cancel is in view too" | done |
+| S57 | The README shows the review state at 1280 and 375 px, and says how layouts were tested | `README.md`; `docs/screenshots/` | done |
 
 ## Decisions
 
@@ -242,10 +245,12 @@ The brief asks for "restructure sections". When the target is a section, the age
 
 Mobile-first, with breakpoints around 640 and 1024 px. The visual design is unchanged: this is layout only. From 1024 px the sidebar, document and card sit side by side, with the document and card centered together. Under 1024 px the sidebar becomes a sticky bar on top and the card stacks below the document.
 
-A bottom sheet was considered and rejected. The diff is complete inside the card, so the text doesn't need to stay visible during review, and stacking is simpler to keep unbroken. When a suggestion or an error arrives, the card scrolls into view. After accept or reject, the page scrolls back to the text, so the user sees what changed.
+A bottom sheet was considered and rejected. The diff is complete inside the card, so the text doesn't need to stay visible during review, and stacking is simpler to keep unbroken. The card scrolls into view as soon as a request starts, so Cancel is visible, and again when the suggestion or an error arrives. After accept or reject, the page scrolls back to the text, so the user sees what changed. The "Try one" prompts are below the whole document here, so a "Try a suggestion" button at the top takes the user to them whenever nothing is being reviewed.
 
 - **Expensive:** the user doesn't notice a suggestion arrived, or loses their place. The scroll in both directions is the guard, and both are tested.
-- **Cheap:** on a phone the "Try one" prompts are below the whole document, so a new user has to scroll to find them. The hint and the Commands button in the bar are visible from the start. While a request is loading, Cancel is also down in the card, because the scroll only happens on arrival.
+- **Cheap:** the scroll on loading moves the user away from their text before there's an answer to read. The page scrolls back after accept or reject.
+
+Layouts were tested in desktop Chromium at 375 to 2560 px, not on real phones, so touch selection and the on-screen keyboard are untested.
 
 ## Model comparison
 

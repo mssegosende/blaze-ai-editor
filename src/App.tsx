@@ -21,7 +21,7 @@ import {
 } from './constants'
 import type { Command } from './constants'
 import { useBlazeEditor } from './hooks/useBlazeEditor'
-import { useCardIntoView } from './hooks/useCardIntoView'
+import { showTryPrompts, useCardIntoView } from './hooks/useCardIntoView'
 import { useNotice } from './hooks/useNotice'
 import { usePalette } from './hooks/usePalette'
 import { useSelectionPill } from './hooks/useSelectionPill'
@@ -115,7 +115,13 @@ function Workspace({ editor }: { editor: Editor }) {
         onShortcuts={() => setShortcutsOpen(true)}
       />
       <div className={styles.workspace}>
-        <EditorPane editor={editor} fileName={DOCUMENT_FILE_NAME} showHint={!suggestion.hasAsked} />
+        <EditorPane
+          editor={editor}
+          fileName={DOCUMENT_FILE_NAME}
+          showHint={!suggestion.hasAsked}
+          showTryButton={cardView.kind === 'idle' && tryPrompts.length > 0}
+          onTry={showTryPrompts}
+        />
         <CoAuthorCard
           appName={APP_NAME}
           view={cardView}

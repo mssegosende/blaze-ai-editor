@@ -1,3 +1,4 @@
+import { TRY_PROMPTS_ID } from '../../constants'
 import type { TryPrompt } from '../../constants'
 import styles from './EmptyState.module.css'
 
@@ -20,7 +21,7 @@ export function EmptyState({ prompts, onTry }: EmptyStateProps) {
         . Suggestions appear here as a diff, and nothing changes until you accept.
       </p>
       {prompts.length > 0 && (
-        <div className={styles.try}>
+        <div id={TRY_PROMPTS_ID} className={styles.try}>
           <h3 className={styles.label}>Try one</h3>
           <div className={styles.prompts}>
             {prompts.map((prompt) => (

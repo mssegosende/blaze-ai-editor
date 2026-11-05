@@ -2,6 +2,12 @@
 
 A Markdown editor in the browser where an AI works as a co-author. You select text and ask for something, the AI proposes a change, and you see it as a diff and decide. Nothing in your document changes until you accept.
 
+![Reviewing a suggestion at 1280 px: the document with the target highlighted, and the card with the rationale, the diff and the controls](docs/screenshots/review-1280.png)
+
+<img src="docs/screenshots/review-375.png" alt="The same review at 375 px: the card stacked below the document and scrolled into view" width="300">
+
+*The review state at 1280 and 375 px. Both screenshots were taken with a stubbed API, so the suggestion is sample text rather than a real model reply.*
+
 ## How to run it
 
 You need Node 22.9 or newer, pnpm, and an [OpenRouter](https://openrouter.ai) API key.
@@ -37,6 +43,8 @@ pnpm test:e2e                          # browser tests
 
 The browser tests never call the real API. They start only the web app, not the server that holds the key, and answer every request from a stub.
 
+Layouts were tested in desktop Chromium at 375 to 2560 px, not on real phones.
+
 ## What I built
 
 - **A Markdown editor**, built on Tiptap, that opens straight into a sample document. You can also write your own text and ask about that.
@@ -47,7 +55,7 @@ The browser tests never call the real API. They start only the web app, not the 
 - **One undo.** An accepted suggestion goes in as a single transaction, so one Ctrl+Z removes all of it and none of your typing.
 - **Stale protection.** If you edit a paragraph while a suggestion for it is pending, the suggestion is discarded with a notice. Paste and undo count as edits too.
 - **Clear failures.** A request can be cancelled, and a missing key, exhausted credit or unreachable server each get their own message and a Retry button.
-- **A responsive layout**, mobile-first, with breakpoints around 640 and 1024 px. On wide screens the document and card stay together, centered. Under 1024 px the sidebar becomes a bar on top and the card stacks below the document, scrolling into view when a suggestion arrives.
+- **A responsive layout**, mobile-first, with breakpoints around 640 and 1024 px. On wide screens the document and card stay together, centered. Under 1024 px the sidebar becomes a bar on top and the card stacks below the document, scrolling into view as soon as a request starts, so Cancel is within reach, and again when the suggestion arrives. A "Try a suggestion" button at the top takes you to the prompts.
 - **A small server in `server/`** that exists only to call OpenRouter, so the key never reaches the browser.
 
 ## Key decisions and trade-offs

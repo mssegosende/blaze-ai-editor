@@ -94,7 +94,9 @@ export { expect }
 /** Opens the app and waits for the editor. */
 export async function openApp(page: Page): Promise<void> {
   await page.goto('/')
-  await expect(page.locator('.tiptap')).toBeVisible()
+  // Longer than the default 5s: at the start of a run, every worker is waiting on
+  // a cold Vite to compile the app. A real break still ends the run: see maxFailures.
+  await expect(page.locator('.tiptap')).toBeVisible({ timeout: 15_000 })
 }
 
 export function docText(page: Page): Promise<string> {

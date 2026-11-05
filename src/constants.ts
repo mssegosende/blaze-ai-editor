@@ -33,6 +33,9 @@ export interface TryPrompt {
   command: Command
 }
 
+/** Where "Try a suggestion" scrolls to on narrow screens. */
+export const TRY_PROMPTS_ID = 'try-prompts'
+
 /** First-open prompts: one click to a useful suggestion, no reading required. */
 export const TRY_PROMPTS: TryPrompt[] = [
   { id: 'why', label: 'Make “Why now” shorter', heading: 'Why now', command: COMMANDS.shorter },

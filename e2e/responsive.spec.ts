@@ -283,6 +283,39 @@ test.describe('stacked layout', () => {
     expect(panel?.y ?? -1).toBeGreaterThanOrEqual(60)
   })
 
+  test('as soon as a request starts loading, Cancel is in view below the bar', async ({ page, suggest }) => {
+    await openApp(page)
+    await expect(card(page)).not.toBeInViewport()
+
+    suggest.hang()
+    await page.getByRole('button', { name: /Commands/ }).click()
+    await page.keyboard.press('Enter')
+
+    const cancel = page.getByRole('button', { name: 'Cancel' })
+    await expect(cancel).toBeInViewport({ ratio: 1 })
+    const panel = await card(page).boundingBox()
+    expect(panel?.y ?? -1).toBeGreaterThanOrEqual(60)
+
+    await cancel.click()
+    await expect(card(page)).toContainText('Nothing to review')
+  })
+
+  test('while a refine is loading, its Cancel is in view too', async ({ page, suggest }) => {
+    await openApp(page)
+    suggest.reply(SAFE_REWRITE)
+    await selectText(page, SAFE_SENTENCE)
+    await page.getByRole('toolbar').getByRole('button', { name: 'Shorter', exact: true }).click()
+    await expect(page.getByRole('button', { name: 'Accept all' })).toBeVisible()
+
+    // Started from the top of the page, far from the card's refine controls.
+    await page.evaluate(() => window.scrollTo(0, 0))
+    suggest.hang()
+    await page.getByRole('button', { name: /Commands/ }).click()
+    await page.keyboard.press('Enter')
+
+    await expect(page.getByRole('button', { name: 'Cancel' })).toBeInViewport({ ratio: 1 })
+  })
+
   test('a refine answer brings the card back into view, but stepping through history does not move it', async ({ page, suggest }) => {
     await openApp(page)
     suggest.reply(SAFE_REWRITE, 'First answer.')
@@ -345,6 +378,68 @@ test.describe('stacked layout', () => {
     await expect(page.locator('kbd:visible')).toHaveCount(0)
     await page.getByRole('button', { name: /Commands/ }).click()
     await expect(page.getByText('to move')).toBeHidden()
+  })
+})
+
+test.describe('the "Try a suggestion" button', () => {
+  const tryButton = (page: Page) => page.getByRole('button', { name: 'Try a suggestion' })
+
+  for (const width of [375, 768]) {
+    test(`at ${width}px it sits by the hint and takes you to the prompts`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 700 })
+      await openApp(page)
+      const firstPrompt = page.getByRole('button', { name: 'Make “Why now” shorter' })
+      await expect(firstPrompt).not.toBeInViewport()
+      await expect(tryButton(page)).toBeInViewport()
+
+      // Beside the hint, above the document.
+      const hint = await page.getByText('Select any sentence to ask for a rewrite').boundingBox()
+      const button = await tryButton(page).boundingBox()
+      const sheet = await page.locator('article').boundingBox()
+      if (!hint || !button || !sheet) throw new Error('Not visible')
+      expect(button.y + button.height).toBeLessThanOrEqual(sheet.y)
+      expect(Math.abs(button.y - hint.y)).toBeLessThanOrEqual(hint.height + button.height)
+      expect(button.height).toBeGreaterThanOrEqual(44)
+
+      await tryButton(page).click()
+      await expect(firstPrompt).toBeInViewport({ ratio: 1 })
+      await expect(page.getByRole('button', { name: 'Make the safety section more formal' })).toBeInViewport({ ratio: 1 })
+      await expect(firstPrompt).toBeFocused()
+    })
+  }
+
+  for (const width of [1024, 1280]) {
+    test(`at ${width}px it isn't there, because the prompts are already on screen`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 800 })
+      await openApp(page)
+      await expect(tryButton(page)).toBeHidden()
+    })
+  }
+
+  test('it goes away during a review and comes back after, even once the hint is gone', async ({ page, suggest }) => {
+    await page.setViewportSize({ width: 375, height: 800 })
+    await openApp(page)
+    await expect(tryButton(page)).toBeVisible()
+
+    suggest.reply(SAFE_REWRITE)
+    await selectText(page, SAFE_SENTENCE)
+    await page.getByRole('toolbar').getByRole('button', { name: 'Shorter', exact: true }).click()
+    await expect(page.getByRole('button', { name: 'Accept all' })).toBeVisible()
+    await expect(tryButton(page)).toBeHidden()
+
+    await page.getByRole('button', { name: 'Reject all' }).click()
+    await expect(tryButton(page)).toBeVisible()
+    await expect(page.getByText('Select any sentence to ask for a rewrite')).toBeHidden()
+  })
+
+  test('with no prompts left to scroll to, it goes away', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 800 })
+    await openApp(page)
+    await page.locator('.tiptap h1').click()
+    await page.keyboard.press('ControlOrMeta+a')
+    await page.keyboard.press('Backspace')
+    await expect(page.getByRole('button', { name: /^Make / })).toHaveCount(0)
+    await expect(tryButton(page)).toBeHidden()
   })
 })
 

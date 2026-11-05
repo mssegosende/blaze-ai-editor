@@ -14,6 +14,31 @@
   font-size: var(--text-xs);
 }
 
+.intro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* The prompts are below the whole document here, so this takes you to them. */
+.tryButton {
+  min-height: var(--size-target);
+  padding: 0 var(--space-5);
+  border: 1px solid var(--color-navy);
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--color-ink);
+  font-size: var(--text-md);
+  font-weight: 500;
+}
+
+@media (min-width: 1024px) {
+  .tryButton {
+    display: none;
+  }
+}
+
 .hint {
   display: inline-flex;
   align-items: center;
