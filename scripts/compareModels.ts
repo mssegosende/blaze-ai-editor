@@ -5,9 +5,9 @@
  * Usage: pnpm compare-models <output.json>
  */
 import { writeFileSync } from 'node:fs'
-import { diffWordsWithSpace } from 'diff'
 import { callModel } from '../server/openRouter.ts'
 import type { SuggestRequest } from '../shared/contract.ts'
+import { computeDiff } from '../src/lib/diff.ts'
 
 const MODELS = ['anthropic/claude-haiku-5.5', 'openai/gpt-6-luna', 'anthropic/claude-sonnet-5.5']
 const ROUNDS = 3
@@ -60,21 +60,8 @@ function redact(text: string): string {
 }
 
 function measureChanges(original: string, rewrite: string) {
-  const countChars = (text: string) => text.replace(/\s/g, '').length
-  let changes = 0
-  let changedChars = 0
-  let inChange = false
-  for (const part of diffWordsWithSpace(original, rewrite)) {
-    if (part.added || part.removed) {
-      changedChars += countChars(part.value)
-      if (!inChange) changes += 1
-      inChange = true
-    } else if (part.value.trim() !== '') {
-      inChange = false
-    }
-  }
-  const total = countChars(original) + countChars(rewrite)
-  return { changes, percentChanged: total === 0 ? 0 : Math.round((changedChars / total) * 100) }
+  const { changeCount, changedRatio } = computeDiff(original, rewrite)
+  return { changes: changeCount, percentChanged: Math.round(changedRatio * 100) }
 }
 
 function checkOutput(passage: string, rewrite: string, rationale: string) {

@@ -5,6 +5,7 @@
  * Usage: pnpm score-models <results.json>
  */
 import { readFileSync } from 'node:fs'
+import { computeDiff } from '../src/lib/diff.ts'
 
 interface SavedRecord {
   model: string
@@ -12,7 +13,6 @@ interface SavedRecord {
   case: string
   step: 'first' | 'refine'
   ok: boolean
-  changes?: number
   rewrite?: string
 }
 
@@ -53,15 +53,23 @@ function percent(part: number, whole: number): string {
 const path = process.argv[2]
 if (!path) throw new Error('Usage: pnpm score-models <results.json>')
 
-const { models, records } = JSON.parse(readFileSync(path, 'utf8')) as {
+const { models, cases, records } = JSON.parse(readFileSync(path, 'utf8')) as {
   models: string[]
+  cases: { name: string; passage: string }[]
   records: SavedRecord[]
+}
+
+/** Scored with the app's real diff, so these are the changes a user would see. */
+function diffOf(run: SavedRecord) {
+  const passage = cases.find((testCase) => testCase.name === run.case)?.passage ?? ''
+  return computeDiff(passage, run.rewrite ?? '')
 }
 
 for (const model of models) {
   const ok = records.filter((record) => record.model === model && record.ok)
   const groups = Map.groupBy(ok, (record) => `${record.case} / ${record.step}`)
 
+  const blocks = ok.filter((run) => diffOf(run).mode === 'block').length
   let matchingChangePairs = 0
   let matchingFactPairs = 0
   let identicalTextPairs = 0
@@ -80,7 +88,10 @@ for (const model of models) {
     for (let a = 0; a < runs.length; a += 1) {
       for (let b = a + 1; b < runs.length; b += 1) {
         pairs += 1
-        if (runs[a]?.changes === runs[b]?.changes) matchingChangePairs += 1
+        const [runA, runB] = [runs[a], runs[b]]
+        if (runA && runB && diffOf(runA).changeCount === diffOf(runB).changeCount) {
+          matchingChangePairs += 1
+        }
         if (kept[a]?.join() === kept[b]?.join()) matchingFactPairs += 1
         if (runs[a]?.rewrite === runs[b]?.rewrite) identicalTextPairs += 1
       }
@@ -89,7 +100,8 @@ for (const model of models) {
       Object.keys(FACTS[caseName] ?? {}).filter((fact) => !facts.includes(fact)),
     )
     lines.push(
-      `  ${group}: changes [${runs.map((run) => run.changes).join(', ')}]` +
+      `  ${group}: changes [${runs.map((run) => diffOf(run).changeCount).join(', ')}]` +
+        ` | percent changed [${runs.map((run) => Math.round(diffOf(run).changedRatio * 100)).join(', ')}]` +
         ` | missing ${JSON.stringify(missing)}`,
     )
   }
@@ -99,5 +111,6 @@ for (const model of models) {
   console.log(`  same facts kept:        ${matchingFactPairs}/${pairs} pairs (${percent(matchingFactPairs, pairs)})`)
   console.log(`  identical text:         ${identicalTextPairs}/${pairs} pairs (${percent(identicalTextPairs, pairs)})`)
   console.log(`  facts kept overall:     ${factsFound}/${factsTotal} (${percent(factsFound, factsTotal)})`)
+  console.log(`  shown as a block:       ${blocks}/${ok.length}`)
   console.log(lines.join('\n'))
 }

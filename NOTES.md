@@ -62,11 +62,11 @@ Test names are the names the tests will have. Update the status when a row is pr
 
 | # | Requirement | Proof (file or test) | Status |
 |---|---|---|---|
-| S1 | Each change can be accepted or rejected separately | test "partial accept keeps only the chosen changes" | planned |
-| S2 | All changes can be accepted or rejected at once | tests "accepting every change reproduces the rewrite exactly", "rejecting every change reproduces the original exactly" | planned |
+| S1 | Each change can be accepted or rejected separately | test "partial accept keeps only the chosen changes" | done |
+| S2 | All changes can be accepted or rejected at once | tests "accepting every change reproduces the rewrite exactly", "rejecting every change reproduces the original exactly" | done |
 | S3 | The diff is computed in the browser, not described by the model | `src/lib/diff.ts`; contract in `shared/contract.ts` | planned |
-| S4 | Bold and links survive a suggestion | tests "partial accept never leaves unbalanced bold markers", "a changed URL is one change, never half a link", "changing link text keeps the URL" | planned |
-| S5 | Over 60% changed shows one before/after block | tests "a full rewrite is a single before/after block", "exactly 60% changed stays word by word" | planned |
+| S4 | Bold and links survive a suggestion | tests "partial accept never leaves unbalanced bold markers", "a changed URL is one change, never half a link", "changing link text keeps the URL" | done |
+| S5 | Over 60% changed shows one before/after block | tests "a full rewrite is a single before/after block", "exactly 60% changed stays word by word" | done |
 | S6 | Accept is a single transaction; Ctrl+Z undoes all of it | test "one undo restores the whole accepted suggestion" | planned |
 | S7 | Accepting an inline selection keeps its paragraph whole | test "an inline selection does not split its paragraph" | planned |
 | S8 | Editing the paragraph discards the pending suggestion with a notice | tests "editing inside the paragraph discards the suggestion", "editing elsewhere keeps the suggestion and moves its range" | planned |
@@ -220,7 +220,7 @@ The brief asks for "restructure sections". When the target is a section, the age
 
 **Method.** `pnpm compare-models` uses the app's real prompt and model call. Three models, three paragraphs, each with one instruction and one "Make it warmer." refine, and every one of those run 3 times: 54 calls, all successful, USD 0.0887 in total. Raw replies are in `docs/model-comparison.json`. The candidates were picked from OpenRouter's list for structured output support and price. Run on 2026-11-05.
 
-**Agreement between runs.** `pnpm score-models` compares the three runs of each paragraph and step, pair by pair, with no model calls: 6 groups of 3 runs gives 18 pairs per model. "Same number of changes" counts diff changes. "Same facts kept" means both replies kept the same items from a fixed checklist per paragraph, defined in `scripts/scoreComparison.ts`.
+**Agreement between runs.** `pnpm score-models` compares the three runs of each paragraph and step, pair by pair, with no model calls: 6 groups of 3 runs gives 18 pairs per model. "Same number of changes" counts changes from the app's real diff (`src/lib/diff.ts`), recomputed from the saved replies, so it may differ from the `changes` field stored in the raw file. "Same facts kept" means both replies kept the same items from a fixed checklist per paragraph, defined in `scripts/scoreComparison.ts`.
 
 | Paragraph | Instruction | What it tests |
 |---|---|---|
@@ -245,6 +245,7 @@ The brief asks for "restructure sections". When the target is a section, the age
 | Replies dropping a claim (read by hand) | 1 of 18 | **6 of 18** | 0 of 18 |
 | "Why now" median: changes / percent changed | 7 / 53% | 10 / 52% | 6 / 30% |
 | Rationale over the 25-word limit | 5 of 18 | 0 of 18 | 7 of 18 |
+| Shown as a before/after block (over 60% changed) | 3 of 18 | 1 of 18 | 6 of 18 |
 
 The two "read by hand" rows are my judgment after reading every reply, so check them against the raw file if they matter.
 
