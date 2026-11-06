@@ -120,3 +120,13 @@ A separate test kept the section as read-only context only after it proved usefu
 - **A mock adapter** for the API client, so the app could run and be demonstrated without a key.
 - **Version history** showing how the document evolved with AI help.
 - **Screen-reader testing.** The app uses real buttons, labels and aria state, and contrast and target sizes are measured, but nothing has been tested with an actual screen reader.
+
+## AI sessions
+
+The raw Claude Code session files are in `ai-sessions/`, unedited except
+for one change: the OpenRouter API key, which appeared in the first
+session, is masked as `[REDACTED_OPENROUTER_KEY]`. There are three files:
+an early setup session that I restarted from scratch, and the main build
+session, which was resumed once after the terminal closed.
+`.gitattributes` marks them `-text`, so Git never rewrites their line
+endings.
